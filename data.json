@@ -66,9 +66,9 @@
     "targetTeam": 700
   },
   "roleProfiles": {
-    "marketing": { "name": "Budiono Siregar", "initials": "BS", "id": "MK-0294", "email": "budiono@saleskit.id", "phone": "+62 822 6839 0294", "avatar": "../avatar/Avatar.svg" },
-    "admin":     { "name": "Sari Hapsari",    "initials": "SH", "id": "AD-0011", "email": "sari@saleskit.id",    "phone": "+62 812 9988 0011", "avatar": "../avatar/Avatar (1).svg" },
-    "manager":   { "name": "Niko Rajani",     "initials": "NR", "id": "MG-0001", "email": "niko@saleskit.id",    "phone": "+62 811 7000 0001", "avatar": "../avatar/Avatar (2).svg" }
+    "marketing": { "name": "Budiono Siregar", "initials": "BS", "id": "MK-0294", "email": "budiono@saleskit.id", "phone": "+62 822 6839 0294", "avatar": "./avatar/Avatar.svg" },
+    "admin":     { "name": "Sari Hapsari",    "initials": "SH", "id": "AD-0011", "email": "sari@saleskit.id",    "phone": "+62 812 9988 0011", "avatar": "./avatar/Avatar (1).svg" },
+    "manager":   { "name": "Niko Rajani",     "initials": "NR", "id": "MG-0001", "email": "niko@saleskit.id",    "phone": "+62 811 7000 0001", "avatar": "./avatar/Avatar (2).svg" }
   },
   "roleMeta": {
     "marketing": { "label": "Marketing Lapangan", "short": "Marketing", "desc": "Input pelanggan baru di lapangan, absensi GPS.", "demoEmail": "marketing@saleskit.id" },
