@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <meta name="description" content="Aplikasi marketing lapangan untuk pendataan pelanggan, absensi GPS, dan leaderboard penjualan." />
+  <title>Sales Kit — Pendataan Pelanggan Lapangan</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+<div id="app">
+
+  <!-- ========================================================
+       PAGE: ONBOARDING
+  ======================================================== -->
+  <div id="page-onboarding" class="page active" style="display:flex;flex-direction:column;justify-content:space-between;background:#fff;padding:3rem 1.5rem;min-height:100vh;">
+    <div style="height:1.5rem;"></div>
+    <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+      <div class="onboarding-illustration">
+        <img src="../icon/Group.svg" alt="Sales Kit Illustration" draggable="false" />
+      </div>
+      <h1 class="onboarding-title">Pendataan Jadi Mudah</h1>
+      <p class="onboarding-sub">Data pelanggan yang rapi terorganisir membantu pemasaran meningkatkan penjualan.</p>
+    </div>
+    <div>
+      <button class="btn btn-primary" onclick="navigate('login')" style="border-radius:1rem;">Login</button>
+    </div>
+  </div>
+
+  <!-- ========================================================
+       PAGE: LOGIN
+  ======================================================== -->
+  <div id="page-login" class="page">
+    <div class="page-header pb-short" style="padding-bottom:5rem;">
+      <div class="blob"></div>
+      <button onclick="navigate('onboarding')" style="display:inline-flex;align-items:center;justify-content:center;width:2.5rem;height:2.5rem;border-radius:0.75rem;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.20);cursor:pointer;color:#fff;">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" stroke="none"><path d="M9.56994 18.8201C9.37994 18.8201 9.18994 18.7501 9.03994 18.6001L2.96994 12.5301C2.67994 12.2401 2.67994 11.7601 2.96994 11.4701L9.03994 5.40012C9.32994 5.11012 9.80994 5.11012 10.0999 5.40012C10.3899 5.69012 10.3899 6.17012 10.0999 6.46012L4.55994 12.0001L10.0999 17.5401C10.3899 17.8301 10.3899 18.3101 10.0999 18.6001C9.95994 18.7501 9.75994 18.8201 9.56994 18.8201Z"/><path d="M20.4999 12.75H3.66992C3.25992 12.75 2.91992 12.41 2.91992 12C2.91992 11.59 3.25992 11.25 3.66992 11.25H20.4999C20.9099 11.25 21.2499 11.59 21.2499 12C21.2499 12.41 20.9099 12.75 20.4999 12.75Z"/></svg>
+      </button>
+      <h1 style="margin-top:1.5rem;font-size:1.5rem;font-weight:700;position:relative;">Selamat Datang Kembali</h1>
+      <p style="color:rgba(255,255,255,0.80);font-size:0.875rem;margin-top:0.25rem;position:relative;">Pilih jabatan &amp; masuk untuk lanjutkan kerja Anda.</p>
+    </div>
+
+    <div class="login-card">
+      <div style="margin-bottom:0.75rem;">
+        <p style="font-size:0.875rem;font-weight:600;color:var(--muted-fg);margin-bottom:0.75rem;">Pilih jabatan (demo)</p>
+        <div class="grid-3" id="role-grid"></div>
+        <p id="role-desc" style="margin-top:0.5rem;font-size:0.6875rem;color:var(--muted-fg);line-height:1.4;"></p>
+      </div>
+
+      <div style="margin-bottom:1rem;">
+        <label class="lbl">E-mail</label>
+        <input id="login-email" type="email" class="input" style="margin-top:0.5rem;" />
+      </div>
+      <div style="margin-bottom:1rem;">
+        <label class="lbl">Kata sandi</label>
+        <div class="pw-wrap" style="margin-top:0.5rem;">
+          <input id="login-pw" type="password" class="input" value="password" style="padding-right:3rem;" />
+          <button type="button" class="pw-toggle" id="pw-toggle-btn" onclick="togglePw()">
+            <svg id="eye-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="none">
+              <g clip-path="url(#eo)">
+                <path d="M15.58 11.9999C15.58 13.9799 13.98 15.5799 12 15.5799C10.02 15.5799 8.42004 13.9799 8.42004 11.9999C8.42004 10.0199 10.02 8.41992 12 8.41992C13.98 8.41992 15.58 10.0199 15.58 11.9999Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M12 20.2707C15.53 20.2707 18.82 18.1907 21.11 14.5907C22.01 13.1807 22.01 10.8107 21.11 9.4007C18.82 5.8007 15.53 3.7207 12 3.7207C8.46997 3.7207 5.17997 5.8007 2.88997 9.4007C1.98997 10.8107 1.98997 13.1807 2.88997 14.5907C5.17997 18.1907 8.46997 20.2707 12 20.2707Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </g>
+              <defs><clipPath id="eo"><rect width="24" height="24" fill="none"/></clipPath></defs>
+            </svg>
+          </button>
+        </div>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem;font-size:0.875rem;">
+        <label style="display:flex;align-items:center;gap:0.5rem;color:var(--muted-fg);">
+          <input type="checkbox" checked style="width:1rem;height:1rem;accent-color:var(--primary);" /> Ingat saya
+        </label>
+        <button type="button" style="color:var(--primary);font-weight:500;background:none;border:none;cursor:pointer;">Lupa sandi?</button>
+      </div>
+      <button class="btn btn-primary" id="login-submit-btn" onclick="doLogin()" style="border-radius:0.75rem;">
+        Masuk sebagai <span id="login-role-label">Marketing</span>
+      </button>
+      <p style="font-size:0.6875rem;text-align:center;color:var(--muted-fg);margin-top:0.75rem;">
+        Mode demo · Untuk ganti jabatan, logout di halaman Profil.
+      </p>
+    </div>
+    <div style="flex:1;min-height:2rem;"></div>
+  </div>
+
+  <!-- ========================================================
+       PAGE: HOME (DASHBOARD)
+  ======================================================== -->
+  <div id="page-home" class="page">
+    <header class="page-header" style="padding-bottom:6rem;">
+      <div class="blob"></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;position:relative;">
+        <div style="display:flex;align-items:center;gap:0.75rem;">
+          <div style="width:2.75rem;height:2.75rem;border-radius:50%;background:rgba(255,255,255,0.20);border:1px solid rgba(255,255,255,0.30);overflow:hidden;display:flex;align-items:center;justify-content:center;">
+            <img id="home-avatar" src="" alt="" style="width:100%;height:100%;object-fit:cover;" />
+          </div>
+          <div>
+            <p id="home-greeting" style="font-size:0.8125rem;color:#ffffff;"></p>
+            <p id="home-name" style="font-size:1.0625rem;font-weight:600;color:#ffffff;line-height:1.2;"></p>
+            <p id="home-sub" style="font-size:0.6875rem;color:rgba(255,255,255,0.95);font-weight:500;text-transform:uppercase;letter-spacing:0.075em;"></p>
+          </div>
+        </div>
+        <button style="position:relative;width:2.5rem;height:2.5rem;border-radius:0.75rem;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.20);display:flex;align-items:center;justify-content:center;color:#fff;">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" stroke="none"><g clip-path="url(#b1)"><path d="M12.0201 20.5299C9.69011 20.5299 7.36011 20.1599 5.15011 19.4199C4.31011 19.1299 3.67011 18.5399 3.39011 17.7699C3.10011 16.9999 3.20011 16.1499 3.66011 15.3899L4.81011 13.4799C5.05011 13.0799 5.27011 12.2799 5.27011 11.8099V8.91992C5.27011 5.19992 8.30011 2.16992 12.0201 2.16992C15.7401 2.16992 18.7701 5.19992 18.7701 8.91992V11.8099C18.7701 12.2699 18.9901 13.0799 19.2301 13.4899L20.3701 15.3899C20.8001 16.1099 20.8801 16.9799 20.5901 17.7699C20.3001 18.5599 19.6701 19.1599 18.8801 19.4199C16.6801 20.1599 14.3501 20.5299 12.0201 20.5299Z"/><path d="M13.8801 3.93969C13.8101 3.93969 13.7401 3.92969 13.6701 3.90969C13.3801 3.82969 13.1001 3.76969 12.8301 3.72969C11.9801 3.61969 11.1601 3.67969 10.3901 3.90969C10.1101 3.99969 9.81011 3.90969 9.62011 3.69969C9.43011 3.48969 9.37011 3.18969 9.48011 2.91969C9.89011 1.86969 10.8901 1.17969 12.0301 1.17969C13.1701 1.17969 14.1701 1.85969 14.5801 2.91969C14.6801 3.18969 14.6301 3.48969 14.4401 3.69969C14.2901 3.85969 14.0801 3.93969 13.8801 3.93969Z"/><path d="M12.02 22.8105C11.03 22.8105 10.07 22.4105 9.37002 21.7105C8.67002 21.0105 8.27002 20.0505 8.27002 19.0605H9.77002C9.77002 19.6505 10.01 20.2305 10.43 20.6505C10.85 21.0705 11.43 21.3105 12.02 21.3105C13.26 21.3105 14.27 20.3005 14.27 19.0605H15.77C15.77 21.1305 14.09 22.8105 12.02 22.8105Z"/></g><defs><clipPath id="b1"><rect width="24" height="24" fill="currentColor"/></clipPath></defs></svg>
+          <span style="position:absolute;top:0.5rem;right:0.625rem;width:0.5rem;height:0.5rem;border-radius:50%;background:var(--warning);"></span>
+        </button>
+      </div>
+    </header>
+
+    <section style="padding:0 1rem;margin-top:-5rem;position:relative;z-index:10;" class="space-y-3">
+      <div id="home-summary-card" class="card card-xl summary-card"></div>
+      <div id="home-mini-stats" class="grid-2"></div>
+    </section>
+
+    <div id="home-alert-banner" style="padding:0 1rem;margin-top:1rem;display:none;"></div>
+
+    <section style="padding:0 1rem;margin-top:1.25rem;">
+      <div class="search-bar">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="none"><path d="M11.5 21C16.7467 21 21 16.7467 21 11.5C21 6.25329 16.7467 2 11.5 2C6.25329 2 2 6.25329 2 11.5C2 16.7467 6.25329 21 11.5 21Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M22 22L20 20" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <input id="home-search" placeholder="Cari pelanggan..." oninput="renderCustomerList()" />
+      </div>
+      <div class="tab-scroll" style="margin-top:1.25rem;margin-left:-1rem;margin-right:-1rem;padding:0 1rem;">
+        <div class="tabs" id="home-tabs"></div>
+      </div>
+    </section>
+
+    <section style="padding:0 1rem 6rem;margin-top:1rem;" class="space-y-3" id="customer-list"></section>
+
+    <div style="flex:1;"></div>
+    <div id="home-bottom-nav"></div>
+  </div>
+
+  <!-- ========================================================
+       PAGE: LEADERBOARD
+  ======================================================== -->
+  <div id="page-leaderboard" class="page">
+    <header class="page-header pb-tall">
+      <div class="blob"></div>
+      <h1 style="position:relative;" id="lb-title">Leaderboard</h1>
+      <p style="position:relative;" id="lb-sub">Top marketing periode bulan ini</p>
+      <div class="period-switch" id="period-switch"></div>
+    </header>
+
+    <section style="padding:0 1rem;margin-top:-6rem;position:relative;z-index:10;">
+      <div class="card card-xl" style="padding:1.25rem;">
+        <div class="podium-grid" id="podium"></div>
+      </div>
+    </section>
+
+    <section style="padding:0 1rem;margin-top:1rem;">
+      <div class="search-bar">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="none"><path d="M11.5 21C16.7467 21 21 16.7467 21 11.5C21 6.25329 16.7467 2 11.5 2C6.25329 2 2 6.25329 2 11.5C2 16.7467 6.25329 21 11.5 21Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M22 22L20 20" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <input id="lb-search" placeholder="Cari nama marketing..." oninput="renderLeaderboard()" />
+      </div>
+    </section>
+    <section style="padding:0 1rem;margin-top:0.75rem;" class="space-y-3 pb-4" id="lb-list"></section>
+    <div style="flex:1;"></div>
+    <div id="lb-bottom-nav"></div>
+  </div>
+
+  <!-- ========================================================
+       PAGE: ABSENSI
+  ======================================================== -->
+  <div id="page-absensi" class="page">
+    <header class="page-header">
+      <div class="blob" style="right:-3rem;top:0;"></div>
+      <div style="display:flex;align-items:center;gap:0.75rem;position:relative;">
+        <div style="width:3rem;height:3rem;border-radius:50%;background:rgba(255,255,255,0.20);border:1px solid rgba(255,255,255,0.30);overflow:hidden;display:flex;align-items:center;justify-content:center;">
+          <img id="absen-avatar" src="" alt="" style="width:100%;height:100%;object-fit:cover;" />
+        </div>
+        <div>
+          <p id="absen-name" style="font-weight:600;"></p>
+          <p id="absen-meta" style="font-size:0.75rem;color:rgba(255,255,255,0.80);"></p>
+        </div>
+      </div>
+      <p id="absen-clock" class="clock-display"></p>
+      <p id="absen-date" class="clock-date"></p>
+    </header>
+
+    <section style="padding:0 1rem;margin-top:-4rem;position:relative;z-index:10;">
+      <div class="card card-xl absen-card">
+        <div class="absen-grid">
+          <div class="absen-box">
+            <p style="font-size:0.75rem;color:var(--muted-fg);font-weight:500;">Absen Masuk</p>
+            <p id="checkin-time" class="absen-time">--:--:--</p>
+            <button id="checkin-btn" class="btn btn-primary btn-sm" style="margin-top:0.5rem;" onclick="doCheckin()">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="none"><path d="M8.8999 7.56023C9.2099 3.96023 11.0599 2.49023 15.1099 2.49023H15.2399C19.7099 2.49023 21.4999 4.28023 21.4999 8.75023V15.2702C21.4999 19.7402 19.7099 21.5302 15.2399 21.5302H15.1099C11.0899 21.5302 9.2399 20.0802 8.9099 16.5402" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 12H14.88" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M12.6499 8.65039L15.9999 12.0004L12.6499 15.3504" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              Masuk
+            </button>
+          </div>
+          <div class="absen-box">
+            <p style="font-size:0.75rem;color:var(--muted-fg);font-weight:500;">Absen Keluar</p>
+            <p class="absen-time">--:--:--</p>
+            <button id="checkout-btn" class="btn btn-sm" style="margin-top:0.5rem;background:var(--destructive-soft);color:var(--destructive);" onclick="doCheckout()" disabled>
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="none"><path d="M8.8999 7.56023C9.2099 3.96023 11.0599 2.49023 15.1099 2.49023H15.2399C19.7099 2.49023 21.4999 4.28023 21.4999 8.75023V15.2702C21.4999 19.7402 19.7099 21.5302 15.2399 21.5302H15.1099C11.0899 21.5302 9.2399 20.0802 8.9099 16.5402" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M15.0001 12H3.62012" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M5.85 8.65039L2.5 12.0004L5.85 15.3504" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              Keluar
+            </button>
+          </div>
+        </div>
+        <div class="gps-bar">
+          <span style="display:inline-flex;align-items:center;gap:0.5rem;font-weight:600;">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" stroke="none"><g clip-path="url(#nav)"><path d="M14.2199 21.6293C13.0399 21.6293 11.3699 20.7993 10.0499 16.8293L9.32988 14.6693L7.16988 13.9493C3.20988 12.6293 2.37988 10.9593 2.37988 9.77934C2.37988 8.60934 3.20988 6.92934 7.16988 5.59934L15.6599 2.76934C17.7799 2.05934 19.5499 2.26934 20.6399 3.34934C21.7299 4.42934 21.9399 6.20934 21.2299 8.32934L18.3999 16.8193C17.0699 20.7993 15.3999 21.6293 14.2199 21.6293Z"/><path d="M10.11 14.4C9.92005 14.4 9.73005 14.33 9.58005 14.18C9.29005 13.89 9.29005 13.41 9.58005 13.12L13.16 9.53C13.45 9.24 13.93 9.24 14.22 9.53C14.51 9.82 14.51 10.3 14.22 10.59L10.64 14.18C10.5 14.33 10.3 14.4 10.11 14.4Z"/></g><defs><clipPath id="nav"><rect width="24" height="24" fill="currentColor"/></clipPath></defs></svg>
+            GPS Akurat ±5m
+          </span>
+          <span style="display:inline-flex;align-items:center;gap:0.25rem;font-weight:500;">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="none"><g clip-path="url(#mp)"><path d="M12 13.4295C13.7231 13.4295 15.12 12.0326 15.12 10.3095C15.12 8.58633 13.7231 7.18945 12 7.18945C10.2769 7.18945 8.88 8.58633 8.88 10.3095C8.88 12.0326 10.2769 13.4295 12 13.4295Z" stroke="currentColor" stroke-width="1.5"/><path d="M3.61995 8.49C5.58995 -0.169998 18.42 -0.159997 20.38 8.5C21.53 13.58 18.37 17.88 15.6 20.54C13.59 22.48 10.41 22.48 8.38995 20.54C5.62995 17.88 2.46995 13.57 3.61995 8.49Z" stroke="currentColor" stroke-width="1.5"/></g><defs><clipPath id="mp"><rect width="24" height="24" fill="none"/></clipPath></defs></svg>
+            Kantor Pusat
+          </span>
+        </div>
+      </div>
+    </section>
+
+    <div id="absen-extra"></div>
+    <div style="flex:1;"></div>
+    <div id="absen-bottom-nav"></div>
+  </div>
+
+  <!-- ========================================================
+       PAGE: PROFILE
+  ======================================================== -->
+  <div id="page-profile" class="page">
+    <header class="page-header">
+      <div class="blob"></div>
+      <h1 style="position:relative;">Profil</h1>
+      <p style="position:relative;">Kelola data dan keamanan akun Anda</p>
+    </header>
+
+    <section style="padding:0 1rem;margin-top:-4rem;position:relative;z-index:10;">
+      <div class="card card-xl card-elevated" style="padding:1.25rem;">
+        <div style="display:flex;align-items:center;gap:1rem;">
+          <div class="profile-avatar-wrap">
+            <div class="profile-avatar">
+              <img id="profile-avatar-img" src="" alt="" />
+            </div>
+            <button class="camera-btn">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="none"><g clip-path="url(#cam)"><path d="M6.76005 22H17.24C20 22 21.1 20.31 21.23 18.25L21.75 9.99C21.89 7.83 20.17 6 18 6C17.39 6 16.83 5.65 16.55 5.11L15.83 3.66C15.37 2.75 14.17 2 13.15 2H10.86C9.83005 2 8.63005 2.75 8.17005 3.66L7.45005 5.11C7.17005 5.65 6.61005 6 6.00005 6C3.83005 6 2.11005 7.83 2.25005 9.99L2.77005 18.25C2.89005 20.31 4.00005 22 6.76005 22Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M10.5 8H13.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 18C13.79 18 15.25 16.54 15.25 14.75C15.25 12.96 13.79 11.5 12 11.5C10.21 11.5 8.75 12.96 8.75 14.75C8.75 16.54 10.21 18 12 18Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></g><defs><clipPath id="cam"><rect width="24" height="24" fill="none"/></clipPath></defs></svg>
+            </button>
+          </div>
+          <div style="flex:1;">
+            <h2 id="profile-name" style="font-size:1.125rem;font-weight:700;"></h2>
+            <p id="profile-id" style="font-size:0.875rem;color:var(--muted-fg);"></p>
+            <span id="profile-badge" class="badge badge-primary" style="margin-top:0.25rem;display:inline-block;"></span>
+          </div>
+        </div>
+        <div id="profile-stats" class="profile-stats" style="margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border);"></div>
+      </div>
+    </section>
+
+    <section style="padding:0 1rem;margin-top:1rem;" class="space-y-3">
+      <div class="group-section">
+        <p class="group-title">Personal Info</p>
+        <div class="group-card" id="profile-info-card"></div>
+      </div>
+      <div class="group-section">
+        <p class="group-title">Pengaturan</p>
+        <div class="group-card">
+          <button class="group-item w-full" style="cursor:pointer;background:none;border:none;text-align:left;width:100%;transition:background .2s;" onmouseover="this.style.background='var(--muted)'" onmouseout="this.style.background='none'">
+            <div class="icon-wrap icon-wrap-sm icon-primary">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="none"><g clip-path="url(#sc)"><path d="M20.9099 11.1196H3.08992C2.57992 11.1196 2.15992 10.6996 2.15992 10.1896V7.70962C2.15992 7.10962 2.56992 6.55962 3.13992 6.35962C7.27992 4.87962 12.7199 4.87962 16.8599 6.35962C17.4299 6.55962 17.8399 7.10962 17.8399 7.70962V10.1896C17.8399 10.6996 17.4199 11.1196 16.9099 11.1196H20.9099ZM12 22.7496C9.52992 22.7496 7.07992 22.2996 5.12992 21.4196C3.82992 20.8296 2.62992 20.0396 1.75992 18.9496C1.02992 18.0396 0.609924 16.9396 0.609924 15.7996C0.609924 14.3196 1.42992 12.9196 2.84992 11.8596C4.93992 10.3396 7.39992 9.60962 9.85992 9.60962H14.1399C16.5999 9.60962 19.0599 10.3396 21.1499 11.8596C22.5699 12.9196 23.3899 14.3196 23.3899 15.7996C23.3899 16.9396 22.9699 18.0396 22.2399 18.9496C21.3699 20.0396 20.1699 20.8296 18.8699 21.4196C16.9199 22.2996 14.4699 22.7496 12 22.7496Z" stroke="currentColor" stroke-width="1.5"/></g><defs><clipPath id="sc"><rect width="24" height="24" fill="none"/></clipPath></defs></svg>
+            </div>
+            <div class="group-item-content"><p class="group-item-label">Keamanan</p><p class="group-item-value">Keamanan &amp; Sandi</p></div>
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" stroke="none" style="color:var(--muted-fg);flex-shrink:0;"><path d="M8.9101 20.6695C8.7201 20.6695 8.5301 20.5995 8.3801 20.4495C8.0901 20.1595 8.0901 19.6795 8.3801 19.3895L14.9001 12.8695C15.3801 12.3895 15.3801 11.6095 14.9001 11.1295L8.3801 4.60953C8.0901 4.31953 8.0901 3.83953 8.3801 3.54953C8.6701 3.25953 9.1501 3.25953 9.4401 3.54953L15.9601 10.0695C16.4701 10.5795 16.7601 11.2695 16.7601 11.9995C16.7601 12.7295 16.4801 13.4195 15.9601 13.9295L9.4401 20.4495C9.2901 20.5895 9.1001 20.6695 8.9101 20.6695Z"/></svg>
+          </button>
+          <button class="group-item w-full" style="cursor:pointer;background:none;border:none;text-align:left;width:100%;transition:background .2s;" onmouseover="this.style.background='var(--muted)'" onmouseout="this.style.background='none'">
+            <div class="icon-wrap icon-wrap-sm icon-primary">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="none"><g clip-path="url(#stg)"><path d="M12 15C13.6569 15 15 13.6569 15 12C15 10.3431 13.6569 9 12 9C10.3431 9 9 10.3431 9 12C9 13.6569 10.3431 15 12 15Z" stroke="currentColor" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 12.8794V11.1194C2 10.0794 2.85 9.21945 3.9 9.21945C5.71 9.21945 6.45 7.93945 5.54 6.36945C5.02 5.46945 5.33 4.29945 6.24 3.77945L7.97 2.78945C8.76 2.31945 9.78 2.59945 10.25 3.38945L10.36 3.57945C11.26 5.14945 12.74 5.14945 13.65 3.57945L13.76 3.38945C14.23 2.59945 15.25 2.31945 16.04 2.78945L17.77 3.77945C18.68 4.29945 18.99 5.46945 18.47 6.36945C17.56 7.93945 18.3 9.21945 20.11 9.21945C21.15 9.21945 22.01 10.0694 22.01 11.1194V12.8794C22.01 13.9194 21.16 14.7794 20.11 14.7794C18.3 14.7794 17.56 16.0594 18.47 17.6294C18.99 18.5394 18.68 19.6994 17.77 20.2194L16.04 21.2094C15.25 21.6794 14.23 21.3994 13.76 20.6094L13.65 20.4194C12.75 18.8494 11.27 18.8494 10.36 20.4194L10.25 20.6094C9.78 21.3994 8.76 21.6794 7.97 21.2094L6.24 20.2194C5.33 19.6994 5.02 18.5294 5.54 17.6294C6.45 16.0594 5.71 14.7794 3.9 14.7794C2.85 14.7794 2 13.9194 2 12.8794Z" stroke="currentColor" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/></g><defs><clipPath id="stg"><rect width="24" height="24" fill="none"/></clipPath></defs></svg>
+            </div>
+            <div class="group-item-content"><p class="group-item-label">Preferensi</p><p class="group-item-value">Notifikasi &amp; Bahasa</p></div>
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" stroke="none" style="color:var(--muted-fg);flex-shrink:0;"><path d="M8.9101 20.6695C8.7201 20.6695 8.5301 20.5995 8.3801 20.4495C8.0901 20.1595 8.0901 19.6795 8.3801 19.3895L14.9001 12.8695C15.3801 12.3895 15.3801 11.6095 14.9001 11.1295L8.3801 4.60953C8.0901 4.31953 8.0901 3.83953 8.3801 3.54953C8.6701 3.25953 9.1501 3.25953 9.4401 3.54953L15.9601 10.0695C16.4701 10.5795 16.7601 11.2695 16.7601 11.9995C16.7601 12.7295 16.4801 13.4195 15.9601 13.9295L9.4401 20.4495C9.2901 20.5895 9.1001 20.6695 8.9101 20.6695Z"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="demo-notice">
+        <div class="demo-notice-icon">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="none"><path d="M14.8901 5.08039C14.0201 4.82039 13.0601 4.65039 12.0001 4.65039C7.21008 4.65039 3.33008 8.53039 3.33008 13.3204C3.33008 18.1204 7.21008 22.0004 12.0001 22.0004C16.7901 22.0004 20.6701 18.1204 20.6701 13.3304C20.6701 11.5504 20.1301 9.89039 19.2101 8.51039" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M16.13 5.32L13.24 2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M16.13 5.32031L12.76 7.78031" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div>
+          <p>Mode Demo Aktif</p>
+          <p>Untuk lihat tampilan jabatan lain, logout dulu lalu pilih jabatan di halaman login.</p>
+        </div>
+      </div>
+
+      <button class="btn btn-destructive-soft" onclick="doLogout()" style="border-radius:1rem;">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="none"><path d="M8.8999 7.56023C9.2099 3.96023 11.0599 2.49023 15.1099 2.49023H15.2399C19.7099 2.49023 21.4999 4.28023 21.4999 8.75023V15.2702C21.4999 19.7402 19.7099 21.5302 15.2399 21.5302H15.1099C11.0899 21.5302 9.2399 20.0802 8.9099 16.5402" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M15.0001 12H3.62012" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M5.85 8.65039L2.5 12.0004L5.85 15.3504" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Keluar Akun
+      </button>
+
+      <div style="height:1rem;"></div>
+    </section>
+    <div style="flex:1;"></div>
+    <div id="profile-bottom-nav"></div>
+  </div>
+
+  <!-- ========================================================
+       PAGE: INPUT PELANGGAN (Stepper)
+  ======================================================== -->
+  <div id="page-input" class="page" style="background:var(--background);padding-bottom:5rem;">
+    <div class="input-header">
+      <div class="input-header-row">
+        <button class="back-btn" id="input-back-btn" onclick="inputBack()">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" stroke="none"><path d="M9.56994 18.8201C9.37994 18.8201 9.18994 18.7501 9.03994 18.6001L2.96994 12.5301C2.67994 12.2401 2.67994 11.7601 2.96994 11.4701L9.03994 5.40012C9.32994 5.11012 9.80994 5.11012 10.0999 5.40012C10.3899 5.69012 10.3899 6.17012 10.0999 6.46012L4.55994 12.0001L10.0999 17.5401C10.3899 17.8301 10.3899 18.3101 10.0999 18.6001C9.95994 18.7501 9.75994 18.8201 9.56994 18.8201Z"/><path d="M20.4999 12.75H3.66992C3.25992 12.75 2.91992 12.41 2.91992 12C2.91992 11.59 3.25992 11.25 3.66992 11.25H20.4999C20.9099 11.25 21.2499 11.59 21.2499 12C21.2499 12.41 20.9099 12.75 20.4999 12.75Z"/></svg>
+        </button>
+        <h1 style="font-size:1.125rem;font-weight:700;">Input Pelanggan Baru</h1>
+      </div>
+      <div class="stepper" id="input-stepper"></div>
+    </div>
+    <div id="input-form-content" style="padding:1rem;" class="space-y-4"></div>
+    <div style="padding:0 1rem 1rem;display:flex;gap:0.75rem;" id="input-form-actions"></div>
+  </div>
+
+  <!-- ========================================================
+       PAGE: DETAIL PELANGGAN
+  ======================================================== -->
+  <div id="page-detail" class="page" style="background:var(--background);padding-bottom:8rem;">
+    <header class="page-header" style="padding-bottom:8rem; z-index:0;">
+      <div style="display:flex;align-items:center;gap:0.75rem;">
+        <button onclick="navigate('home')" style="width:2.5rem;height:2.5rem;border-radius:0.75rem;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.20);display:flex;align-items:center;justify-content:center;color:#fff;cursor:pointer;">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" stroke="none"><path d="M9.56994 18.8201C9.37994 18.8201 9.18994 18.7501 9.03994 18.6001L2.96994 12.5301C2.67994 12.2401 2.67994 11.7601 2.96994 11.4701L9.03994 5.40012C9.32994 5.11012 9.80994 5.11012 10.0999 5.40012C10.3899 5.69012 10.3899 6.17012 10.0999 6.46012L4.55994 12.0001L10.0999 17.5401C10.3899 17.8301 10.3899 18.3101 10.0999 18.6001C9.95994 18.7501 9.75994 18.8201 9.56994 18.8201Z"/><path d="M20.4999 12.75H3.66992C3.25992 12.75 2.91992 12.41 2.91992 12C2.91992 11.59 3.25992 11.25 3.66992 11.25H20.4999C20.9099 11.25 21.2499 11.59 21.2499 12C21.2499 12.41 20.9099 12.75 20.4999 12.75Z"/></svg>
+        </button>
+        <h1 style="font-size:1.125rem;font-weight:700;flex:1;">Detail Pelanggan</h1>
+        <div id="detail-edit-btn"></div>
+      </div>
+    </header>
+    <div id="detail-content" style="padding:0 1rem;margin-top:-6rem;position:relative;z-index:10;" class="space-y-4"></div>
+  </div>
+
+  <!-- ========================================================
+       ACTION SHEET (Modal)
+  ======================================================== -->
+  <div id="action-sheet" class="sheet-overlay hidden" onclick="closeSheet()">
+    <div class="sheet-body" onclick="event.stopPropagation()">
+      <div class="sheet-handle"></div>
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;">
+        <div>
+          <h3 id="sheet-title" style="font-size:1.125rem;font-weight:700;"></h3>
+          <p style="font-size:0.875rem;color:var(--muted-fg);">Pilih status baru untuk pelanggan ini.</p>
+        </div>
+        <button class="sheet-close" onclick="closeSheet()">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="none"><path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+      <div class="choices-grid" id="sheet-choices"></div>
+      <div id="sheet-note" style="margin-top:0.75rem;font-size:0.6875rem;color:var(--muted-fg);"></div>
+      <div style="margin-top:1.25rem;" class="space-y-3">
+        <button class="btn btn-primary" id="sheet-confirm-btn" disabled onclick="confirmSheet()" style="border-radius:0.75rem;opacity:0.5;">Konfirmasi Perubahan</button>
+        <button class="btn btn-card" onclick="closeSheet()" style="border-radius:0.75rem;">Batalkan</button>
+      </div>
+    </div>
+  </div>
+
+</div><!-- #app -->
+
+<script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,78 @@
+{
+  "customers": [
+    { "id": "X1829HH", "name": "Widodo",       "status": "Aktif",   "tempo": "16 Apr 2026", "paket": "Home Ultra 50Mbps",       "alamat": "Kec. Wonokromo, Surabaya", "phone": "+628887702161", "email": "widodo@gmail.com",  "registered": "16 Juli 2026", "amount": 350000, "confirmed": true },
+    { "id": "X1830HH", "name": "Maulana",      "status": "Aktif",   "tempo": "16 Apr 2026", "paket": "Home Advanced 20Mbps",     "alamat": "Kec. Wonokromo, Surabaya", "phone": "+628112233445", "email": "maulana@gmail.com", "registered": "10 Juli 2026", "amount": 220000, "confirmed": true },
+    { "id": "X1831HH", "name": "Lilbah",       "status": "Aktif",   "tempo": "16 Apr 2026", "paket": "Home Light 10Mbps",        "alamat": "Kec. Wonokromo, Surabaya", "phone": "+628554433221", "email": "lilbah@gmail.com",  "registered": "12 Juli 2026", "amount": 150000, "confirmed": true },
+    { "id": "X1832HH", "name": "Alise Mal",    "status": "Aktif",   "tempo": "16 Apr 2026", "paket": "Business Ultra 200Mbps",   "alamat": "Kec. Wonokromo, Surabaya", "phone": "+628773322110", "email": "alise@gmail.com",   "registered": "8 Juli 2026",  "amount": 850000, "confirmed": true },
+    { "id": "X1833HH", "name": "Wiwok",        "status": "Aktif",   "tempo": "16 Apr 2026", "paket": "Home Light 10Mbps",        "alamat": "Kec. Wonokromo, Surabaya", "phone": "+628991122334", "email": "wiwok@gmail.com",   "registered": "5 Juli 2026",  "amount": 150000, "confirmed": true },
+    { "id": "X1834HH", "name": "Bima",         "status": "Potensi", "tempo": "20 Apr 2026", "paket": "Home Ultra 50Mbps",        "alamat": "Kec. Gubeng, Surabaya",    "phone": "+628111122223", "email": "bima@gmail.com",    "registered": "1 Juli 2026",  "amount": 350000, "confirmed": true },
+    { "id": "X1835HH", "name": "Sari",         "status": "Potensi", "tempo": "21 Apr 2026", "paket": "Home Light 10Mbps",        "alamat": "Kec. Gubeng, Surabaya",    "phone": "+628222233334", "email": "sari@gmail.com",    "registered": "2 Juli 2026",  "amount": 150000, "confirmed": true },
+    { "id": "X1836HH", "name": "Rendra",       "status": "Tunda",   "tempo": "18 Apr 2026", "paket": "Home Advanced 20Mbps",     "alamat": "Kec. Tegalsari, Surabaya", "phone": "+628333344445", "email": "rendra@gmail.com",  "registered": "3 Juli 2026",  "amount": 220000, "confirmed": true },
+    { "id": "X1837HH", "name": "Nadia",        "status": "Tunda",   "tempo": "19 Apr 2026", "paket": "Home Light 10Mbps",        "alamat": "Kec. Tegalsari, Surabaya", "phone": "+628444455556", "email": "nadia@gmail.com",   "registered": "4 Juli 2026",  "amount": 150000, "confirmed": true },
+    { "id": "X1838HH", "name": "Hendra",       "status": "Tunda",   "tempo": "01 Mar 2026", "paket": "Home Ultra 50Mbps",        "alamat": "Kec. Sawahan, Surabaya",   "phone": "+628555566667", "email": "hendra@gmail.com",  "registered": "10 Jan 2026",  "amount": 350000, "confirmed": true },
+    { "id": "X1839HH", "name": "Yuni",         "status": "Cabut",   "tempo": "01 Feb 2026", "paket": "Home Light 10Mbps",        "alamat": "Kec. Sawahan, Surabaya",   "phone": "+628666677778", "email": "yuni@gmail.com",    "registered": "20 Des 2025",  "amount": 150000, "confirmed": true },
+    { "id": "X1901HH", "name": "Galih Pratama","status": "Aktif",   "tempo": "25 Apr 2026", "paket": "Home Advanced 20Mbps",     "alamat": "Kec. Rungkut, Surabaya",   "phone": "+628711122334", "email": "galih@gmail.com",   "registered": "20 Apr 2026",  "amount": 220000, "confirmed": false, "submittedBy": "Budiono Siregar" },
+    { "id": "X1902HH", "name": "Intan Permata","status": "Aktif",   "tempo": "26 Apr 2026", "paket": "Home Ultra 50Mbps",        "alamat": "Kec. Mulyorejo, Surabaya", "phone": "+628712233445", "email": "intan@gmail.com",   "registered": "20 Apr 2026",  "amount": 350000, "confirmed": false, "submittedBy": "Niko Rajani" },
+    { "id": "X1903HH", "name": "Rafi Ahmad",   "status": "Potensi", "tempo": "28 Apr 2026", "paket": "Home Light 10Mbps",        "alamat": "Kec. Tambaksari, Surabaya","phone": "+628713344556", "email": "rafi@gmail.com",    "registered": "21 Apr 2026",  "amount": 150000, "confirmed": false, "submittedBy": "Praniwi" }
+  ],
+  "salesTrend": [
+    { "label": "Mar", "value": 12 },
+    { "label": "Apr", "value": 15 },
+    { "label": "Mei", "value": 13 },
+    { "label": "Jun", "value": 18 },
+    { "label": "Jul", "value": 16 },
+    { "label": "Agu", "value": 20 }
+  ],
+  "teamSalesTrend": [
+    { "label": "Mar", "value": 412 },
+    { "label": "Apr", "value": 478 },
+    { "label": "Mei", "value": 455 },
+    { "label": "Jun", "value": 532 },
+    { "label": "Jul", "value": 567 },
+    { "label": "Agu", "value": 624 }
+  ],
+  "leaderboard": [
+    { "rank": 1, "name": "Niko Rajani",  "deals": 142, "revenue": 87.5 },
+    { "rank": 2, "name": "Knobi",        "deals": 128, "revenue": 71.2 },
+    { "rank": 3, "name": "Praniwi",      "deals": 119, "revenue": 65.8 },
+    { "rank": 4, "name": "Siti Azizah", "deals": 100, "revenue": 54.5 },
+    { "rank": 5, "name": "Budiono",      "deals": 92,  "revenue": 48.3 },
+    { "rank": 6, "name": "Anita",        "deals": 85,  "revenue": 42.1 },
+    { "rank": 7, "name": "Dewa",         "deals": 78,  "revenue": 38.4 },
+    { "rank": 8, "name": "Putri",        "deals": 71,  "revenue": 35.2 },
+    { "rank": 9, "name": "Galih",        "deals": 64,  "revenue": 31.0 }
+  ],
+  "attendanceHistory": [
+    { "type": "Masuk",  "date": "Kamis, 16 Apr 2026",  "location": "Kantor Pusat",   "time": "08:30:00", "status": "Tepat Waktu" },
+    { "type": "Keluar", "date": "Rabu, 15 Apr 2026",   "location": "Kantor Pusat",   "time": "17:05:00", "status": "Tepat Waktu" },
+    { "type": "Masuk",  "date": "Rabu, 15 Apr 2026",   "location": "Medan Lapangan", "time": "10:00:00", "status": "Tepat Waktu" },
+    { "type": "Masuk",  "date": "Selasa, 14 Apr 2026", "location": "Medan Lapangan", "time": "10:59:00", "status": "Terlambat" },
+    { "type": "Masuk",  "date": "Senin, 13 Apr 2026",  "location": "Kantor Pusat",   "time": "08:30:00", "status": "Tepat Waktu" },
+    { "type": "Masuk",  "date": "Jumat, 10 Apr 2026",  "location": "Medan Lapangan", "time": "08:25:00", "status": "Tepat Waktu" }
+  ],
+  "lateRecap": [
+    { "name": "Dewa Pranata",   "role": "Marketing", "initials": "DP", "lateCount": 6, "lastLate": "16 Apr 2026", "avgMinutes": 24 },
+    { "name": "Anita Lestari",  "role": "Marketing", "initials": "AL", "lateCount": 5, "lastLate": "15 Apr 2026", "avgMinutes": 18 },
+    { "name": "Galih Saputra",  "role": "Marketing", "initials": "GS", "lateCount": 4, "lastLate": "14 Apr 2026", "avgMinutes": 32 },
+    { "name": "Rendi Wibowo",   "role": "Admin",     "initials": "RW", "lateCount": 3, "lastLate": "12 Apr 2026", "avgMinutes": 12 },
+    { "name": "Putri Maharani", "role": "Marketing", "initials": "PM", "lateCount": 2, "lastLate": "10 Apr 2026", "avgMinutes": 9  },
+    { "name": "Sari Hapsari",   "role": "Admin",     "initials": "SH", "lateCount": 1, "lastLate": "08 Apr 2026", "avgMinutes": 6  }
+  ],
+  "teamStats": {
+    "totalRevenueMonth": 624,
+    "totalDealsMonth": 487,
+    "activeMarketers": 24,
+    "growth": 9.8,
+    "targetTeam": 700
+  },
+  "roleProfiles": {
+    "marketing": { "name": "Budiono Siregar", "initials": "BS", "id": "MK-0294", "email": "budiono@saleskit.id", "phone": "+62 822 6839 0294", "avatar": "../avatar/Avatar.svg" },
+    "admin":     { "name": "Sari Hapsari",    "initials": "SH", "id": "AD-0011", "email": "sari@saleskit.id",    "phone": "+62 812 9988 0011", "avatar": "../avatar/Avatar (1).svg" },
+    "manager":   { "name": "Niko Rajani",     "initials": "NR", "id": "MG-0001", "email": "niko@saleskit.id",    "phone": "+62 811 7000 0001", "avatar": "../avatar/Avatar (2).svg" }
+  },
+  "roleMeta": {
+    "marketing": { "label": "Marketing Lapangan", "short": "Marketing", "desc": "Input pelanggan baru di lapangan, absensi GPS.", "demoEmail": "marketing@saleskit.id" },
+    "admin":     { "label": "Admin Data",         "short": "Admin",     "desc": "Konfirmasi & edit data pelanggan dari lapangan.", "demoEmail": "admin@saleskit.id" },
+    "manager":   { "label": "Manager",            "short": "Manager",   "desc": "Rekap tim, tren penjualan agregat, monitoring.",  "demoEmail": "manager@saleskit.id" }
+  }
+}
