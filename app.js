@@ -61,6 +61,63 @@ async function loadData() {
   }
 }
 
+// ── AUTOCOMPLETE KOTA ─────────────────────────────────────────
+const KOTA_LIST = ["Surabaya", "Sidoarjo", "Gresik", "Mojokerto", "Malang", "Pasuruan", "Bangkalan", "Sampang", "Pamekasan", "Sumenep"];
+
+function renderAutocompleteList(inputEl) {
+  const val = inputEl.value.toLowerCase();
+  const wrapper = inputEl.closest('.autocomplete-wrapper');
+  const listEl = wrapper.querySelector('.autocomplete-list');
+  listEl.innerHTML = '';
+  
+  let matches = KOTA_LIST.filter(k => k.toLowerCase().includes(val));
+  if (matches.length === 0) {
+    listEl.innerHTML = `<div style="padding:0.75rem 1rem;font-size:0.875rem;color:var(--muted-fg);">Tidak ditemukan</div>`;
+  } else {
+    matches.forEach(k => {
+      const div = document.createElement('div');
+      div.className = 'autocomplete-item';
+      div.textContent = k;
+      div.onclick = function(e) {
+        e.stopPropagation();
+        inputEl.value = k;
+        listEl.style.display = 'none';
+      };
+      listEl.appendChild(div);
+    });
+  }
+  listEl.style.display = 'block';
+}
+
+function showAutocomplete(inputEl) {
+  renderAutocompleteList(inputEl);
+}
+
+function filterAutocomplete(inputEl) {
+  renderAutocompleteList(inputEl);
+}
+
+function toggleAutocomplete(iconEl) {
+  const wrapper = iconEl.closest('.autocomplete-wrapper');
+  const listEl = wrapper.querySelector('.autocomplete-list');
+  const inputEl = wrapper.querySelector('input');
+  if (listEl.style.display === 'block') {
+    listEl.style.display = 'none';
+  } else {
+    inputEl.focus();
+    renderAutocompleteList(inputEl);
+  }
+}
+
+document.addEventListener('click', function(e) {
+  document.querySelectorAll('.autocomplete-wrapper').forEach(wrap => {
+    if (!wrap.contains(e.target)) {
+      const listEl = wrap.querySelector('.autocomplete-list');
+      if(listEl) listEl.style.display = 'none';
+    }
+  });
+});
+
 // ── ROLE MANAGEMENT ───────────────────────────────────────────
 function getRole() {
   return localStorage.getItem(ROLE_KEY) || null;
@@ -660,22 +717,6 @@ function renderProfile() {
 const STEPS = ['Data Diri','Alamat','Jenis Paket'];
 
 function renderInput(step = 0) {
-  if (!document.getElementById('kecamatan-list')) {
-    document.body.insertAdjacentHTML('beforeend', `
-      <datalist id="kecamatan-list">
-        <option value="Surabaya">
-        <option value="Sidoarjo">
-        <option value="Gresik">
-        <option value="Mojokerto">
-        <option value="Malang">
-        <option value="Pasuruan">
-        <option value="Bangkalan">
-        <option value="Sampang">
-        <option value="Pamekasan">
-        <option value="Sumenep">
-      </datalist>
-    `);
-  }
   inputStep = step;
   gpsLocked = false;
 
@@ -719,7 +760,16 @@ function renderInput(step = 0) {
         </div>
       </div>
       <div style="margin-top:1rem;"><label class="field-label">Provinsi <span class="req">*</span></label><div class="field-wrap"><div style="position:relative;"><select class="input" style="appearance:none;padding-right:2.5rem;"><option value="">Pilih Provinsi</option><option>Jawa Timur</option><option>Jawa Tengah</option></select><svg style="position:absolute;right:0.75rem;top:50%;transform:translateY(-50%);pointer-events:none;" viewBox="0 0 24 24" width="16" height="16" fill="currentColor" stroke="none"><path d="M12 16.7996C11.3 16.7996 10.6 16.5296 10.07 15.9996L3.55002 9.47965C3.26002 9.18965 3.26002 8.70965 3.55002 8.41965C3.84002 8.12965 4.32002 8.12965 4.61002 8.41965L11.13 14.9396C11.61 15.4196 12.39 15.4196 12.87 14.9396L19.39 8.41965C19.68 8.12965 20.16 8.12965 20.45 8.41965C20.74 8.70965 20.74 9.18965 20.45 9.47965L13.93 15.9996C13.4 16.5296 12.7 16.7996 12 16.7996Z"/></svg></div></div></div>
-      <div style="margin-top:1rem;"><label class="field-label">Kota / Kecamatan <span class="req">*</span></label><div class="field-wrap"><div style="position:relative;"><input type="text" list="kecamatan-list" class="input" placeholder="Pilih atau Ketik Kota / Kecamatan"></div></div></div>
+      <div style="margin-top:1rem;">
+        <label class="field-label">Kota / Kecamatan <span class="req">*</span></label>
+        <div class="field-wrap">
+          <div class="autocomplete-wrapper">
+            <input type="text" class="input" placeholder="Pilih atau Ketik Kota / Kecamatan" style="padding-right:2.5rem;" onfocus="showAutocomplete(this)" oninput="filterAutocomplete(this)" autocomplete="off" />
+            <svg onclick="toggleAutocomplete(this)" style="position:absolute;right:0.75rem;top:50%;transform:translateY(-50%);cursor:pointer;" viewBox="0 0 24 24" width="16" height="16" fill="currentColor" stroke="none"><path d="M12 16.7996C11.3 16.7996 10.6 16.5296 10.07 15.9996L3.55002 9.47965C3.26002 9.18965 3.26002 8.70965 3.55002 8.41965C3.84002 8.12965 4.32002 8.12965 4.61002 8.41965L11.13 14.9396C11.61 15.4196 12.39 15.4196 12.87 14.9396L19.39 8.41965C19.68 8.12965 20.16 8.12965 20.45 8.41965C20.74 8.70965 20.74 9.18965 20.45 9.47965L13.93 15.9996C13.4 16.5296 12.7 16.7996 12 16.7996Z"/></svg>
+            <div class="autocomplete-list"></div>
+          </div>
+        </div>
+      </div>
       <div style="margin-top:1rem;display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;">
         <div><label class="field-label">RT</label><div class="field-wrap"><input class="input" placeholder="00" /></div></div>
         <div><label class="field-label">RW</label><div class="field-wrap"><input class="input" placeholder="00" /></div></div>
@@ -847,23 +897,6 @@ function renderEdit(id) {
   if (!c) { navigate('home'); return; }
   selectedDetail = c;
   
-  if (!document.getElementById('kecamatan-list')) {
-    document.body.insertAdjacentHTML('beforeend', `
-      <datalist id="kecamatan-list">
-        <option value="Surabaya">
-        <option value="Sidoarjo">
-        <option value="Gresik">
-        <option value="Mojokerto">
-        <option value="Malang">
-        <option value="Pasuruan">
-        <option value="Bangkalan">
-        <option value="Sampang">
-        <option value="Pamekasan">
-        <option value="Sumenep">
-      </datalist>
-    `);
-  }
-
   navigate('edit');
   
   const content = document.getElementById('edit-form-content');
@@ -887,7 +920,13 @@ function renderEdit(id) {
       <div style="margin-top:1rem;">
         <label class="field-label" style="margin-bottom:0;">Kota / Kecamatan <span class="req">*</span></label>
         <span style="display:block;font-size:0.65rem;color:var(--muted-fg);margin-bottom:0.25rem;">Data sebelumnya: ${c.alamat || 'Belum diatur'}</span>
-        <div class="field-wrap"><div style="position:relative;"><input id="edit-kota" type="text" list="kecamatan-list" class="input" placeholder="Pilih atau Ketik Kota / Kecamatan" value="${c.alamat || ''}"></div></div>
+        <div class="field-wrap">
+          <div class="autocomplete-wrapper">
+            <input id="edit-kota" type="text" class="input" placeholder="Pilih atau Ketik Kota / Kecamatan" value="${c.alamat || ''}" style="padding-right:2.5rem;" onfocus="showAutocomplete(this)" oninput="filterAutocomplete(this)" autocomplete="off" />
+            <svg onclick="toggleAutocomplete(this)" style="position:absolute;right:0.75rem;top:50%;transform:translateY(-50%);cursor:pointer;" viewBox="0 0 24 24" width="16" height="16" fill="currentColor" stroke="none"><path d="M12 16.7996C11.3 16.7996 10.6 16.5296 10.07 15.9996L3.55002 9.47965C3.26002 9.18965 3.26002 8.70965 3.55002 8.41965C3.84002 8.12965 4.32002 8.12965 4.61002 8.41965L11.13 14.9396C11.61 15.4196 12.39 15.4196 12.87 14.9396L19.39 8.41965C19.68 8.12965 20.16 8.12965 20.45 8.41965C20.74 8.70965 20.74 9.18965 20.45 9.47965L13.93 15.9996C13.4 16.5296 12.7 16.7996 12 16.7996Z"/></svg>
+            <div class="autocomplete-list"></div>
+          </div>
+        </div>
       </div>
       <div style="margin-top:1rem;">
         <label class="field-label" style="margin-bottom:0;">Pilihan Paket <span class="req">*</span></label>
