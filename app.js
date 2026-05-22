@@ -13,7 +13,7 @@ let currentPage = '';
 let homeTab = 'Aktif';
 let inputStep = 0;
 let gpsLocked = false;
-let checkedIn = false;
+let checkinStates = JSON.parse(localStorage.getItem('absensi_state') || '{}');
 let clockInterval = null;
 let selectedDetail = null; // customer yang sedang dilihat
 let sheetChoice = null;
@@ -387,8 +387,6 @@ function renderCustomerList() {
       if (editBtn || shiftBtn || deactivateBtn) {
         actionBtns = `<div class="grid-2" style="margin-top:0.75rem;">${editBtn}${shiftBtn || deactivateBtn}</div>`;
       }
-    } else if (!isPending && role === 'marketing' && c.status !== 'Aktif' && c.status !== 'Cabut') {
-      actionBtns = `<button onclick="event.preventDefault();openSheet('${c.id}');" style="margin-top:0.75rem;width:100%;color:var(--success);font-weight:600;font-size:0.875rem;padding:0.625rem;border-radius:0.75rem;background:var(--success-soft);border:none;cursor:pointer;">Tindak Lanjut</button>`;
     }
 
     return `<div class="customer-card${isPending ? ' pending' : ''}" onclick="navigateId('${c.id}')">
@@ -557,6 +555,7 @@ function renderAbsensi() {
   }
 
   buildBottomNav('absen-bottom-nav');
+  updateAbsenUI();
 }
 
 function startClock() {
@@ -574,20 +573,47 @@ function startClock() {
   clockInterval = setInterval(updateClock, 1000);
 }
 
-function doCheckin() {
-  checkedIn = true;
-  const btn = document.getElementById('checkin-btn');
-  const time = document.getElementById('checkin-time');
-  const now = new Date().toLocaleTimeString('id-ID', { hour12: false });
-  if (time) time.textContent = now;
-  if (btn) btn.disabled = true;
-  const out = document.getElementById('checkout-btn');
-  if (out) out.disabled = false;
+function updateAbsenUI() {
+  const state = checkinStates[currentRole] || {};
+  const inBtn = document.getElementById('checkin-btn');
+  const outBtn = document.getElementById('checkout-btn');
+  const inTime = document.getElementById('checkin-time');
+  const outTime = document.getElementById('checkout-time');
+  
+  if (state.in) {
+    if (inTime) inTime.textContent = state.in;
+    if (inBtn) inBtn.disabled = true;
+    if (outBtn) outBtn.disabled = !!state.out;
+    if (outTime && state.out) outTime.textContent = state.out;
+    else if (outTime) outTime.textContent = '--:--:--';
+  } else {
+    if (inTime) inTime.textContent = '--:--:--';
+    if (outTime) outTime.textContent = '--:--:--';
+    if (inBtn) inBtn.disabled = false;
+    if (outBtn) outBtn.disabled = true;
+  }
 }
+
+function doCheckinWithPhoto(event) {
+  if (event.target.files && event.target.files.length > 0) {
+    doCheckin();
+  }
+}
+
+function doCheckin() {
+  const now = new Date().toLocaleTimeString('id-ID', { hour12: false });
+  if (!checkinStates[currentRole]) checkinStates[currentRole] = {};
+  checkinStates[currentRole].in = now;
+  localStorage.setItem('absensi_state', JSON.stringify(checkinStates));
+  updateAbsenUI();
+}
+
 function doCheckout() {
-  checkedIn = false;
-  const btn = document.getElementById('checkout-btn');
-  if (btn) btn.disabled = true;
+  const now = new Date().toLocaleTimeString('id-ID', { hour12: false });
+  if (!checkinStates[currentRole]) checkinStates[currentRole] = {};
+  checkinStates[currentRole].out = now;
+  localStorage.setItem('absensi_state', JSON.stringify(checkinStates));
+  updateAbsenUI();
 }
 
 // ── PROFILE PAGE ──────────────────────────────────────────────
@@ -633,7 +659,23 @@ function renderProfile() {
 // ── INPUT (STEPPER) PAGE ──────────────────────────────────────
 const STEPS = ['Data Diri','Alamat','Jenis Paket'];
 
-function renderInput(step) {
+function renderInput(step = 0) {
+  if (!document.getElementById('kecamatan-list')) {
+    document.body.insertAdjacentHTML('beforeend', `
+      <datalist id="kecamatan-list">
+        <option value="Surabaya">
+        <option value="Sidoarjo">
+        <option value="Gresik">
+        <option value="Mojokerto">
+        <option value="Malang">
+        <option value="Pasuruan">
+        <option value="Bangkalan">
+        <option value="Sampang">
+        <option value="Pamekasan">
+        <option value="Sumenep">
+      </datalist>
+    `);
+  }
   inputStep = step;
   gpsLocked = false;
 
@@ -677,7 +719,7 @@ function renderInput(step) {
         </div>
       </div>
       <div style="margin-top:1rem;"><label class="field-label">Provinsi <span class="req">*</span></label><div class="field-wrap"><div style="position:relative;"><select class="input" style="appearance:none;padding-right:2.5rem;"><option value="">Pilih Provinsi</option><option>Jawa Timur</option><option>Jawa Tengah</option></select><svg style="position:absolute;right:0.75rem;top:50%;transform:translateY(-50%);pointer-events:none;" viewBox="0 0 24 24" width="16" height="16" fill="currentColor" stroke="none"><path d="M12 16.7996C11.3 16.7996 10.6 16.5296 10.07 15.9996L3.55002 9.47965C3.26002 9.18965 3.26002 8.70965 3.55002 8.41965C3.84002 8.12965 4.32002 8.12965 4.61002 8.41965L11.13 14.9396C11.61 15.4196 12.39 15.4196 12.87 14.9396L19.39 8.41965C19.68 8.12965 20.16 8.12965 20.45 8.41965C20.74 8.70965 20.74 9.18965 20.45 9.47965L13.93 15.9996C13.4 16.5296 12.7 16.7996 12 16.7996Z"/></svg></div></div></div>
-      <div style="margin-top:1rem;"><label class="field-label">Kota / Kabupaten <span class="req">*</span></label><div class="field-wrap"><div style="position:relative;"><select class="input" style="appearance:none;padding-right:2.5rem;"><option value="">Pilih Kota</option><option>Surabaya</option></select><svg style="position:absolute;right:0.75rem;top:50%;transform:translateY(-50%);pointer-events:none;" viewBox="0 0 24 24" width="16" height="16" fill="currentColor" stroke="none"><path d="M12 16.7996C11.3 16.7996 10.6 16.5296 10.07 15.9996L3.55002 9.47965C3.26002 9.18965 3.26002 8.70965 3.55002 8.41965C3.84002 8.12965 4.32002 8.12965 4.61002 8.41965L11.13 14.9396C11.61 15.4196 12.39 15.4196 12.87 14.9396L19.39 8.41965C19.68 8.12965 20.16 8.12965 20.45 8.41965C20.74 8.70965 20.74 9.18965 20.45 9.47965L13.93 15.9996C13.4 16.5296 12.7 16.7996 12 16.7996Z"/></svg></div></div></div>
+      <div style="margin-top:1rem;"><label class="field-label">Kota / Kecamatan <span class="req">*</span></label><div class="field-wrap"><div style="position:relative;"><input type="text" list="kecamatan-list" class="input" placeholder="Pilih atau Ketik Kota / Kecamatan"></div></div></div>
       <div style="margin-top:1rem;display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;">
         <div><label class="field-label">RT</label><div class="field-wrap"><input class="input" placeholder="00" /></div></div>
         <div><label class="field-label">RW</label><div class="field-wrap"><input class="input" placeholder="00" /></div></div>
@@ -741,7 +783,7 @@ function renderDetail(id) {
   // Edit button (admin only)
   const editBtn = document.getElementById('detail-edit-btn');
   if (currentRole === 'admin') {
-    editBtn.innerHTML = `<button style="display:inline-flex;align-items:center;gap:0.375rem;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.20);padding:0.375rem 0.75rem;border-radius:0.5rem;font-size:0.75rem;font-weight:600;color:#fff;cursor:pointer;">${ICONS.pencil} Edit</button>`;
+    editBtn.innerHTML = `<button onclick="renderEdit('${id}')" style="display:inline-flex;align-items:center;gap:0.375rem;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.20);padding:0.375rem 0.75rem;border-radius:0.5rem;font-size:0.75rem;font-weight:600;color:#fff;cursor:pointer;">${ICONS.pencil} Edit</button>`;
   } else { editBtn.innerHTML = ''; }
 
   const content = document.getElementById('detail-content');
@@ -799,6 +841,73 @@ function renderDetail(id) {
     </div>`;
 }
 
+function renderEdit(id) {
+  const customers = DB.customers || [];
+  const c = customers.find(x => x.id === id);
+  if (!c) { navigate('home'); return; }
+  selectedDetail = c;
+  
+  if (!document.getElementById('kecamatan-list')) {
+    document.body.insertAdjacentHTML('beforeend', `
+      <datalist id="kecamatan-list">
+        <option value="Surabaya">
+        <option value="Sidoarjo">
+        <option value="Gresik">
+        <option value="Mojokerto">
+        <option value="Malang">
+        <option value="Pasuruan">
+        <option value="Bangkalan">
+        <option value="Sampang">
+        <option value="Pamekasan">
+        <option value="Sumenep">
+      </datalist>
+    `);
+  }
+
+  navigate('edit');
+  
+  const content = document.getElementById('edit-form-content');
+  content.innerHTML = `
+    <div class="card" style="padding:1.25rem;">
+      <div style="margin-bottom:1rem;"><label class="field-label">Nama Lengkap <span class="req">*</span></label><div class="field-wrap"><input id="edit-name" class="input" placeholder="Mis. Budi Santoso" value="${c.name}" /></div></div>
+      <div style="margin-bottom:1rem;"><label class="field-label">Nomor Telepon (WhatsApp) <span class="req">*</span></label><div class="field-wrap"><input id="edit-phone" type="tel" class="input" placeholder="08xxxxxxxxxx" value="${c.phone}" /></div></div>
+      <div style="margin-bottom:1rem;"><label class="field-label">Email (Opsional)</label><div class="field-wrap"><input id="edit-email" type="email" class="input" placeholder="budi@email.com" value="${c.email || ''}" /></div></div>
+      <div style="margin-top:1rem;"><label class="field-label">Kota / Kecamatan <span class="req">*</span></label><div class="field-wrap"><div style="position:relative;"><input id="edit-kota" type="text" list="kecamatan-list" class="input" placeholder="Pilih atau Ketik Kota / Kecamatan" value="${c.alamat || ''}"></div></div></div>
+      <div style="margin-top:1rem;"><label class="field-label">Pilihan Paket <span class="req">*</span></label><div class="field-wrap"><div style="position:relative;">
+        <select id="edit-paket" class="input" style="appearance:none;padding-right:2.5rem;">
+          <option value="Home Light 10Mbps" ${c.paket === 'Home Light 10Mbps' ? 'selected' : ''}>Home Light 10Mbps</option>
+          <option value="Home Advanced 20Mbps" ${c.paket === 'Home Advanced 20Mbps' ? 'selected' : ''}>Home Advanced 20Mbps</option>
+          <option value="Home Ultra 50Mbps" ${c.paket === 'Home Ultra 50Mbps' ? 'selected' : ''}>Home Ultra 50Mbps</option>
+          <option value="Business Ultra 200Mbps" ${c.paket === 'Business Ultra 200Mbps' ? 'selected' : ''}>Business Ultra 200Mbps</option>
+        </select>
+        <svg style="position:absolute;right:0.75rem;top:50%;transform:translateY(-50%);pointer-events:none;" viewBox="0 0 24 24" width="16" height="16" fill="currentColor" stroke="none"><path d="M12 16.7996C11.3 16.7996 10.6 16.5296 10.07 15.9996L3.55002 9.47965C3.26002 9.18965 3.26002 8.70965 3.55002 8.41965C3.84002 8.12965 4.32002 8.12965 4.61002 8.41965L11.13 14.9396C11.61 15.4196 12.39 15.4196 12.87 14.9396L19.39 8.41965C19.68 8.12965 20.16 8.12965 20.45 8.41965C20.74 8.70965 20.74 9.18965 20.45 9.47965L13.93 15.9996C13.4 16.5296 12.7 16.7996 12 16.7996Z"/></svg>
+      </div></div></div>
+    </div>
+  `;
+}
+
+function saveEdit() {
+  if (!selectedDetail) return;
+  const name = document.getElementById('edit-name').value;
+  const phone = document.getElementById('edit-phone').value;
+  const email = document.getElementById('edit-email').value;
+  const kota = document.getElementById('edit-kota').value;
+  const paket = document.getElementById('edit-paket').value;
+  
+  if (!name || !phone || !kota) {
+    alert("Mohon lengkapi field yang wajib!");
+    return;
+  }
+  
+  selectedDetail.name = name;
+  selectedDetail.phone = phone;
+  selectedDetail.email = email;
+  selectedDetail.alamat = kota;
+  selectedDetail.paket = paket;
+  
+  navigateId(selectedDetail.id);
+}
+
 function detailRow(label, value, canCopy) {
   return `<div class="detail-row">
     <span class="detail-row-label" style="font-size:0.875rem;">${label}</span>
@@ -830,21 +939,55 @@ function openSheet(customerId) {
   sheetChoice = null;
 
   const isAdmin = currentRole === 'admin';
-  const allStatuses = ['Aktif','Potensi','Tunda','Cabut'];
-  sheetTargets = isAdmin
-    ? allStatuses.filter(s => s !== c.status)
-    : ['Tunda'];
-
   document.getElementById('sheet-title').textContent = `Alihkan Status ${c.name}`;
-  document.getElementById('sheet-choices').innerHTML = sheetTargets.map(s =>
-    `<button class="choice-btn" onclick="selectChoice('${s}',this)">${s}</button>`
-  ).join('');
+
+  if (isAdmin) {
+    if (c.status === 'Potensi') {
+      document.getElementById('sheet-choices').innerHTML = `
+        <button class="choice-btn" onclick="selectChoice('Aktif',this)">Aktifkan</button>
+        <button class="choice-btn" style="color:var(--destructive);" onclick="handleSheetHapus()">Hapus Data</button>
+      `;
+    } else if (c.status === 'Tunda') {
+      document.getElementById('sheet-choices').innerHTML = `
+        <button class="choice-btn" onclick="selectChoice('Aktif',this)">Aktifkan</button>
+        <button class="choice-btn" style="color:var(--destructive);" onclick="handleSheetCabut()">Cabut</button>
+      `;
+    } else {
+      const allStatuses = ['Aktif','Potensi','Tunda','Cabut'].filter(s => s !== c.status);
+      document.getElementById('sheet-choices').innerHTML = allStatuses.map(s =>
+        `<button class="choice-btn" onclick="selectChoice('${s}',this)">${s}</button>`
+      ).join('');
+    }
+  } else {
+    document.getElementById('sheet-choices').innerHTML = `
+      <button class="choice-btn" onclick="selectChoice('Tunda',this)">Tunda</button>
+    `;
+  }
+
   document.getElementById('sheet-note').textContent = !isAdmin
     ? 'Marketing hanya bisa menandai pelanggan untuk ditinjau admin. Perubahan final akan dilakukan oleh admin.'
     : '';
-  document.getElementById('sheet-confirm-btn').disabled = true;
-  document.getElementById('sheet-confirm-btn').style.opacity = '0.5';
+  const confirmBtn = document.getElementById('sheet-confirm-btn');
+  confirmBtn.textContent = 'Konfirmasi Perubahan';
+  confirmBtn.disabled = true;
+  confirmBtn.style.opacity = '0.5';
   document.getElementById('action-sheet').classList.remove('hidden');
+}
+
+function handleSheetHapus() {
+  if (confirm(`Apakah Anda yakin ingin menghapus data pelanggan ${sheetCustomer.name}?`)) {
+    DB.customers = DB.customers.filter(x => x.id !== sheetCustomer.id);
+    closeSheet();
+    renderCustomerList();
+  }
+}
+
+function handleSheetCabut() {
+  if (confirm(`Apakah Anda yakin ingin mencabut pelanggan ${sheetCustomer.name}?`)) {
+    sheetCustomer.status = 'Cabut';
+    closeSheet();
+    renderCustomerList();
+  }
 }
 
 function selectChoice(s, el) {
@@ -856,7 +999,33 @@ function selectChoice(s, el) {
   confirmBtn.style.opacity = '1';
 }
 
-function confirmSheet() { closeSheet(); }
+function confirmSheet() {
+  if (!sheetChoice || !sheetCustomer) return;
+  if (sheetChoice === 'Aktif' && !document.getElementById('paket-select')) {
+    // Tampilkan dropdown paket
+    document.getElementById('sheet-choices').innerHTML = `
+      <div style="margin-bottom:1rem; text-align:left;">
+        <label class="lbl">Pilih Jenis Paket</label>
+        <select id="paket-select" class="input" style="margin-top:0.5rem;">
+          <option value="Bronze">Bronze</option>
+          <option value="Silver">Silver</option>
+          <option value="Gold">Gold</option>
+          <option value="Platinum">Platinum</option>
+        </select>
+      </div>
+    `;
+    document.getElementById('sheet-confirm-btn').textContent = "Simpan & Aktifkan";
+    return;
+  }
+
+  if (sheetChoice === 'Aktif') {
+    sheetCustomer.paket = document.getElementById('paket-select').value;
+  }
+  
+  sheetCustomer.status = sheetChoice;
+  closeSheet();
+  renderCustomerList();
+}
 function closeSheet() {
   document.getElementById('action-sheet').classList.add('hidden');
   sheetChoice = null;
