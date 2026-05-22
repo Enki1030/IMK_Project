@@ -92,7 +92,7 @@
     <header class="page-header" style="padding-bottom:6rem;">
       <div class="blob"></div>
       <div style="display:flex;align-items:center;justify-content:space-between;position:relative;">
-        <div style="display:flex;align-items:center;gap:0.75rem;">
+        <div style="display:flex;align-items:center;gap:0.75rem;cursor:pointer;" onclick="navigate('profile')">
           <div style="width:2.75rem;height:2.75rem;border-radius:50%;background:rgba(255,255,255,0.20);border:1px solid rgba(255,255,255,0.30);overflow:hidden;display:flex;align-items:center;justify-content:center;">
             <img id="home-avatar" src="" alt="" style="width:100%;height:100%;object-fit:cover;" />
           </div>
@@ -163,7 +163,7 @@
   <!-- ========================================================
        PAGE: ABSENSI
   ======================================================== -->
-  <div id="page-absensi" class="page">
+  <div id="page-absensi" class="page" style="padding-bottom:7rem;">
     <header class="page-header">
       <div class="blob" style="right:-3rem;top:0;"></div>
       <div style="display:flex;align-items:center;gap:0.75rem;position:relative;">
@@ -185,14 +185,15 @@
           <div class="absen-box">
             <p style="font-size:0.75rem;color:var(--muted-fg);font-weight:500;">Absen Masuk</p>
             <p id="checkin-time" class="absen-time">--:--:--</p>
-            <button id="checkin-btn" class="btn btn-primary btn-sm" style="margin-top:0.5rem;" onclick="doCheckin()">
+            <input type="file" id="absen-photo" accept="image/*" capture="environment" style="display:none;" onchange="doCheckinWithPhoto(event)" />
+            <button id="checkin-btn" class="btn btn-primary btn-sm" style="margin-top:0.5rem;" onclick="document.getElementById('absen-photo').click()">
               <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="none"><path d="M8.8999 7.56023C9.2099 3.96023 11.0599 2.49023 15.1099 2.49023H15.2399C19.7099 2.49023 21.4999 4.28023 21.4999 8.75023V15.2702C21.4999 19.7402 19.7099 21.5302 15.2399 21.5302H15.1099C11.0899 21.5302 9.2399 20.0802 8.9099 16.5402" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 12H14.88" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M12.6499 8.65039L15.9999 12.0004L12.6499 15.3504" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
               Masuk
             </button>
           </div>
           <div class="absen-box">
             <p style="font-size:0.75rem;color:var(--muted-fg);font-weight:500;">Absen Keluar</p>
-            <p class="absen-time">--:--:--</p>
+            <p id="checkout-time" class="absen-time">--:--:--</p>
             <button id="checkout-btn" class="btn btn-sm" style="margin-top:0.5rem;background:var(--destructive-soft);color:var(--destructive);" onclick="doCheckout()" disabled>
               <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="none"><path d="M8.8999 7.56023C9.2099 3.96023 11.0599 2.49023 15.1099 2.49023H15.2399C19.7099 2.49023 21.4999 4.28023 21.4999 8.75023V15.2702C21.4999 19.7402 19.7099 21.5302 15.2399 21.5302H15.1099C11.0899 21.5302 9.2399 20.0802 8.9099 16.5402" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M15.0001 12H3.62012" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M5.85 8.65039L2.5 12.0004L5.85 15.3504" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
               Keluar
@@ -220,7 +221,7 @@
   <!-- ========================================================
        PAGE: PROFILE
   ======================================================== -->
-  <div id="page-profile" class="page">
+  <div id="page-profile" class="page" style="padding-bottom:7rem;">
     <header class="page-header">
       <div class="blob"></div>
       <h1 style="position:relative;">Profil</h1>
@@ -309,6 +310,24 @@
     </div>
     <div id="input-form-content" style="padding:1rem;" class="space-y-4"></div>
     <div style="padding:0 1rem 1rem;display:flex;gap:0.75rem;" id="input-form-actions"></div>
+  </div>
+
+  <!-- ========================================================
+       PAGE: EDIT PELANGGAN
+  ======================================================== -->
+  <div id="page-edit" class="page" style="background:var(--background);padding-bottom:5rem;">
+    <div class="input-header">
+      <div class="input-header-row">
+        <button class="back-btn" onclick="navigate('home')">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" stroke="none"><path d="M9.56994 18.8201C9.37994 18.8201 9.18994 18.7501 9.03994 18.6001L2.96994 12.5301C2.67994 12.2401 2.67994 11.7601 2.96994 11.4701L9.03994 5.40012C9.32994 5.11012 9.80994 5.11012 10.0999 5.40012C10.3899 5.69012 10.3899 6.17012 10.0999 6.46012L4.55994 12.0001L10.0999 17.5401C10.3899 17.8301 10.3899 18.3101 10.0999 18.6001C9.95994 18.7501 9.75994 18.8201 9.56994 18.8201Z"/><path d="M20.4999 12.75H3.66992C3.25992 12.75 2.91992 12.41 2.91992 12C2.91992 11.59 3.25992 11.25 3.66992 11.25H20.4999C20.9099 11.25 21.2499 11.59 21.2499 12C21.2499 12.41 20.9099 12.75 20.4999 12.75Z"/></svg>
+        </button>
+        <h1 style="font-size:1.125rem;font-weight:700;">Edit Pelanggan</h1>
+      </div>
+    </div>
+    <div id="edit-form-content" style="padding:1rem;" class="space-y-4"></div>
+    <div style="padding:0 1rem 1rem;display:flex;gap:0.75rem;" id="edit-form-actions">
+      <button class="btn btn-primary" style="flex:1;border-radius:0.75rem;" onclick="saveEdit()">Simpan Perubahan</button>
+    </div>
   </div>
 
   <!-- ========================================================
