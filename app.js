@@ -75,7 +75,7 @@ function clearRoleLS() {
 }
 
 // ── SPA NAVIGATION ────────────────────────────────────────────
-const PAGES = ['onboarding','login','home','leaderboard','absensi','profile','input','detail'];
+const PAGES = ['onboarding','login','home','leaderboard','absensi','profile','input','detail','edit'];
 
 // Safe helper for inline HTML onclick (avoids object literal quoting issues)
 function navigateTab(tab) { navigate('home', { tab }); }
@@ -381,9 +381,9 @@ function renderCustomerList() {
         <button onclick="event.preventDefault();" style="color:#fff;font-weight:600;font-size:0.875rem;padding:0.625rem;border-radius:0.75rem;background:var(--success);">Konfirmasi</button>
       </div>`;
     } else if (!isPending && (canEdit || canShift)) {
-      const editBtn = canEdit ? `<a onclick="event.stopPropagation(); navigate('input');" style="display:flex;align-items:center;justify-content:center;gap:0.375rem;color:var(--primary);font-weight:600;font-size:0.875rem;padding:0.625rem;border-radius:0.75rem;background:var(--primary-soft);">${ICONS.pencil} Edit Data</a>` : '';
-      const shiftBtn = canShift ? `<button onclick="event.preventDefault();openSheet('${c.id}');" style="color:var(--success);font-weight:600;font-size:0.875rem;padding:0.625rem;border-radius:0.75rem;background:var(--success-soft);border:none;cursor:pointer;">Alihkan Status</button>` : '';
-      const deactivateBtn = (!canShift && canEdit && c.status === 'Aktif') ? `<button onclick="event.preventDefault();openSheet('${c.id}');" style="color:var(--destructive);font-weight:600;font-size:0.875rem;padding:0.625rem;border-radius:0.75rem;background:var(--destructive-soft);border:none;cursor:pointer;">Nonaktifkan</button>` : '';
+      const editBtn = canEdit ? `<a onclick="event.stopPropagation(); renderEdit('${c.id}');" style="display:flex;align-items:center;justify-content:center;gap:0.375rem;color:var(--primary);font-weight:600;font-size:0.875rem;padding:0.625rem;border-radius:0.75rem;background:var(--primary-soft);">${ICONS.pencil} Edit Data</a>` : '';
+      const shiftBtn = canShift ? `<button onclick="event.preventDefault();event.stopPropagation();openSheet('${c.id}');" style="color:var(--success);font-weight:600;font-size:0.875rem;padding:0.625rem;border-radius:0.75rem;background:var(--success-soft);border:none;cursor:pointer;">Alihkan Status</button>` : '';
+      const deactivateBtn = (!canShift && canEdit && c.status === 'Aktif') ? `<button onclick="event.preventDefault();event.stopPropagation();openSheet('${c.id}');" style="color:var(--destructive);font-weight:600;font-size:0.875rem;padding:0.625rem;border-radius:0.75rem;background:var(--destructive-soft);border:none;cursor:pointer;">Nonaktifkan</button>` : '';
       if (editBtn || shiftBtn || deactivateBtn) {
         actionBtns = `<div class="grid-2" style="margin-top:0.75rem;">${editBtn}${shiftBtn || deactivateBtn}</div>`;
       }
@@ -869,11 +869,30 @@ function renderEdit(id) {
   const content = document.getElementById('edit-form-content');
   content.innerHTML = `
     <div class="card" style="padding:1.25rem;">
-      <div style="margin-bottom:1rem;"><label class="field-label">Nama Lengkap <span class="req">*</span></label><div class="field-wrap"><input id="edit-name" class="input" placeholder="Mis. Budi Santoso" value="${c.name}" /></div></div>
-      <div style="margin-bottom:1rem;"><label class="field-label">Nomor Telepon (WhatsApp) <span class="req">*</span></label><div class="field-wrap"><input id="edit-phone" type="tel" class="input" placeholder="08xxxxxxxxxx" value="${c.phone}" /></div></div>
-      <div style="margin-bottom:1rem;"><label class="field-label">Email (Opsional)</label><div class="field-wrap"><input id="edit-email" type="email" class="input" placeholder="budi@email.com" value="${c.email || ''}" /></div></div>
-      <div style="margin-top:1rem;"><label class="field-label">Kota / Kecamatan <span class="req">*</span></label><div class="field-wrap"><div style="position:relative;"><input id="edit-kota" type="text" list="kecamatan-list" class="input" placeholder="Pilih atau Ketik Kota / Kecamatan" value="${c.alamat || ''}"></div></div></div>
-      <div style="margin-top:1rem;"><label class="field-label">Pilihan Paket <span class="req">*</span></label><div class="field-wrap"><div style="position:relative;">
+      <div style="margin-bottom:1rem;">
+        <label class="field-label" style="margin-bottom:0;">Nama Lengkap <span class="req">*</span></label>
+        <span style="display:block;font-size:0.65rem;color:var(--muted-fg);margin-bottom:0.25rem;">Data sebelumnya: ${c.name}</span>
+        <div class="field-wrap"><input id="edit-name" class="input" placeholder="Mis. Budi Santoso" value="${c.name}" /></div>
+      </div>
+      <div style="margin-bottom:1rem;">
+        <label class="field-label" style="margin-bottom:0;">Nomor Telepon (WhatsApp) <span class="req">*</span></label>
+        <span style="display:block;font-size:0.65rem;color:var(--muted-fg);margin-bottom:0.25rem;">Data sebelumnya: ${c.phone}</span>
+        <div class="field-wrap"><input id="edit-phone" type="tel" class="input" placeholder="08xxxxxxxxxx" value="${c.phone}" /></div>
+      </div>
+      <div style="margin-bottom:1rem;">
+        <label class="field-label" style="margin-bottom:0;">Email (Opsional)</label>
+        <span style="display:block;font-size:0.65rem;color:var(--muted-fg);margin-bottom:0.25rem;">Data sebelumnya: ${c.email || 'Belum diatur'}</span>
+        <div class="field-wrap"><input id="edit-email" type="email" class="input" placeholder="budi@email.com" value="${c.email || ''}" /></div>
+      </div>
+      <div style="margin-top:1rem;">
+        <label class="field-label" style="margin-bottom:0;">Kota / Kecamatan <span class="req">*</span></label>
+        <span style="display:block;font-size:0.65rem;color:var(--muted-fg);margin-bottom:0.25rem;">Data sebelumnya: ${c.alamat || 'Belum diatur'}</span>
+        <div class="field-wrap"><div style="position:relative;"><input id="edit-kota" type="text" list="kecamatan-list" class="input" placeholder="Pilih atau Ketik Kota / Kecamatan" value="${c.alamat || ''}"></div></div>
+      </div>
+      <div style="margin-top:1rem;">
+        <label class="field-label" style="margin-bottom:0;">Pilihan Paket <span class="req">*</span></label>
+        <span style="display:block;font-size:0.65rem;color:var(--muted-fg);margin-bottom:0.25rem;">Data sebelumnya: ${c.paket || 'Belum diatur'}</span>
+        <div class="field-wrap"><div style="position:relative;">
         <select id="edit-paket" class="input" style="appearance:none;padding-right:2.5rem;">
           <option value="Home Light 10Mbps" ${c.paket === 'Home Light 10Mbps' ? 'selected' : ''}>Home Light 10Mbps</option>
           <option value="Home Advanced 20Mbps" ${c.paket === 'Home Advanced 20Mbps' ? 'selected' : ''}>Home Advanced 20Mbps</option>
@@ -952,6 +971,16 @@ function openSheet(customerId) {
         <button class="choice-btn" onclick="selectChoice('Aktif',this)">Aktifkan</button>
         <button class="choice-btn" style="color:var(--destructive);" onclick="handleSheetCabut()">Cabut</button>
       `;
+    } else if (c.status === 'Aktif') {
+      document.getElementById('sheet-choices').innerHTML = `
+        <button class="choice-btn" onclick="selectChoice('Tunda',this)">Tunda</button>
+        <button class="choice-btn" style="color:var(--destructive);" onclick="handleSheetCabut()">Cabut</button>
+      `;
+    } else if (c.status === 'Cabut') {
+      document.getElementById('sheet-choices').innerHTML = `
+        <button class="choice-btn" onclick="selectChoice('Aktif',this)">Aktifkan</button>
+        <button class="choice-btn" onclick="selectChoice('Potensi',this)">Potensi</button>
+      `;
     } else {
       const allStatuses = ['Aktif','Potensi','Tunda','Cabut'].filter(s => s !== c.status);
       document.getElementById('sheet-choices').innerHTML = allStatuses.map(s =>
@@ -1004,14 +1033,17 @@ function confirmSheet() {
   if (sheetChoice === 'Aktif' && !document.getElementById('paket-select')) {
     // Tampilkan dropdown paket
     document.getElementById('sheet-choices').innerHTML = `
-      <div style="margin-bottom:1rem; text-align:left;">
-        <label class="lbl">Pilih Jenis Paket</label>
-        <select id="paket-select" class="input" style="margin-top:0.5rem;">
-          <option value="Bronze">Bronze</option>
-          <option value="Silver">Silver</option>
-          <option value="Gold">Gold</option>
-          <option value="Platinum">Platinum</option>
-        </select>
+      <div style="margin-bottom:1rem; text-align:left; width:100%;">
+        <label class="field-label" style="font-size:0.875rem;">Pilih Jenis Paket <span class="req">*</span></label>
+        <div class="field-wrap" style="position:relative; margin-top:0.5rem; width:100%;">
+          <select id="paket-select" class="input" style="appearance:none; padding-right:2.5rem; width:100%;">
+            <option value="Home Light 10Mbps">Home Light 10Mbps</option>
+            <option value="Home Advanced 20Mbps">Home Advanced 20Mbps</option>
+            <option value="Home Ultra 50Mbps">Home Ultra 50Mbps</option>
+            <option value="Business Ultra 200Mbps">Business Ultra 200Mbps</option>
+          </select>
+          <svg style="position:absolute;right:0.75rem;top:50%;transform:translateY(-50%);pointer-events:none;" viewBox="0 0 24 24" width="16" height="16" fill="currentColor" stroke="none"><path d="M12 16.7996C11.3 16.7996 10.6 16.5296 10.07 15.9996L3.55002 9.47965C3.26002 9.18965 3.26002 8.70965 3.55002 8.41965C3.84002 8.12965 4.32002 8.12965 4.61002 8.41965L11.13 14.9396C11.61 15.4196 12.39 15.4196 12.87 14.9396L19.39 8.41965C19.68 8.12965 20.16 8.12965 20.45 8.41965C20.74 8.70965 20.74 9.18965 20.45 9.47965L13.93 15.9996C13.4 16.5296 12.7 16.7996 12 16.7996Z"/></svg>
+        </div>
       </div>
     `;
     document.getElementById('sheet-confirm-btn').textContent = "Simpan & Aktifkan";
