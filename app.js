@@ -1,8 +1,4 @@
-/* =============================================================
-   SALES KIT — app.js
-   Replikasi 100% dari arsitektur React + TanStack Router
-   Seluruh logika aplikasi dalam 1 file vanilla JS
-   ============================================================= */
+
 
 'use strict';
 
@@ -20,6 +16,26 @@ let sheetChoice = null;
 let sheetCustomer = null;
 let sheetTargets = [];
 let lbPeriod = 'Bulan';
+let newCustomerTemp = {
+  name: '',
+  phone: '',
+  email: '',
+  provinsi: '',
+  kabupaten: '',
+  kecamatan: '',
+  rt: '',
+  rw: '',
+  alamat: '',
+  patokan: '',
+  status: 'Aktif',
+  paket: '',
+  payment: 'Unpaid',
+  tempo: '--',
+  amount: 0,
+  confirmed: false,
+  submittedBy: '',
+  photo: false
+};
 
 const ROLE_KEY = 'saleskit.role';
 
@@ -50,16 +66,165 @@ const ICONS = {
 
 // ── DATA LOADER ────────────────────────────────────────────────
 async function loadData() {
+  const localDB = localStorage.getItem('saleskit.db');
+  if (localDB) {
+    try {
+      DB = JSON.parse(localDB);
+      return;
+    } catch (e) {
+      console.error('Gagal parse localStorage saleskit.db', e);
+    }
+  }
   try {
     const res = await fetch('data.json');
     DB = await res.json();
-  } catch(e) {
+    localStorage.setItem('saleskit.db', JSON.stringify(DB));
+  } catch (e) {
     console.error('Gagal load data.json', e);
-    DB = { customers:[], salesTrend:[], teamSalesTrend:[], leaderboard:[],
-           attendanceHistory:[], lateRecap:[], teamStats:{},
-           roleProfiles:{}, roleMeta:{} };
+    DB = {
+      customers: [], salesTrend: [], teamSalesTrend: [], leaderboard: [],
+      attendanceHistory: [], lateRecap: [], teamStats: {},
+      roleProfiles: {}, roleMeta: {}
+    };
   }
 }
+
+function saveDB() {
+  localStorage.setItem('saleskit.db', JSON.stringify(DB));
+}
+window.saveDB = saveDB;
+
+function confirmCustomer(id) {
+  const c = DB.customers.find(x => x.id === id);
+  if (c) {
+    c.confirmed = true;
+    saveDB();
+    if (typeof showToast === 'function') showToast('Data berhasil dikonfirmasi');
+    if (currentPage === 'home') {
+      renderHome();
+    }
+  }
+}
+window.confirmCustomer = confirmCustomer;
+
+// ── GEOGRAPHY AUTOCOMPLETE DATA ────────────────────────────────
+const INDONESIA_GEOGRAPHY = {
+  provinces: [
+    "Aceh", "Bali", "Banten", "Bengkulu", "DI Yogyakarta", "DKI Jakarta", 
+    "Gorontalo", "Jambi", "Jawa Barat", "Jawa Tengah", "Jawa Timur", 
+    "Kalimantan Barat", "Kalimantan Selatan", "Kalimantan Tengah", "Kalimantan Timur", "Kalimantan Utara", 
+    "Kepulauan Bangka Belitung", "Kepulauan Riau", "Lampung", "Maluku", "Maluku Utara", 
+    "Nusa Tenggara Barat", "Nusa Tenggara Timur", "Papua", "Papua Barat", "Riau", 
+    "Sulawesi Barat", "Sulawesi Selatan", "Sulawesi Tengah", "Sulawesi Tenggara", "Sulawesi Utara", 
+    "Sumatera Barat", "Sumatera Selatan", "Sumatera Utara"
+  ],
+  regencies: {
+    "Jawa Timur": [
+      "Bangkalan", "Banyuwangi", "Blitar", "Bojonegoro", "Bondowoso", "Gresik", "Jember", "Jombang",
+      "Kediri", "Lamongan", "Lumajang", "Madiun", "Magetan", "Malang", "Mojokerto", "Nganjuk",
+      "Ngawi", "Pacitan", "Pamekasan", "Pasuruan", "Ponorogo", "Probolinggo", "Sampang", "Sidoarjo",
+      "Situbondo", "Sumenep", "Trenggalek", "Tuban", "Tulungagung", "Batu", "Surabaya"
+    ],
+    "Jawa Tengah": [
+      "Banjarnegara", "Banyumas", "Batang", "Blora", "Boyolali", "Brebes", "Cilacap", "Demak",
+      "Grobogan", "Jepara", "Karanganyar", "Kebumen", "Kendal", "Klaten", "Kudus", "Magelang",
+      "Pati", "Pekalongan", "Pemalang", "Purbalingga", "Purworejo", "Rembang", "Semarang", "Sragen",
+      "Sukoharjo", "Tegal", "Temanggung", "Wonogiri", "Wonosobo", "Salatiga", "Surakarta"
+    ],
+    "Jawa Barat": [
+      "Bandung", "Bekasi", "Bogor", "Ciamis", "Cianjur", "Cirebon", "Garut", "Indramayu",
+      "Karawang", "Kuningan", "Majalengka", "Pangandaran", "Purwakarta", "Subang", "Sukabumi",
+      "Sumedang", "Tasikmalaya", "Banjar", "Cimahi", "Depok"
+    ],
+    "DKI Jakarta": [
+      "Jakarta Barat", "Jakarta Pusat", "Jakarta Selatan", "Jakarta Timur", "Jakarta Utara", "Kepulauan Seribu"
+    ],
+    "DI Yogyakarta": [
+      "Bantul", "Gunungkidul", "Kulon Progo", "Sleman", "Yogyakarta"
+    ],
+    "Banten": [
+      "Lebak", "Pandeglang", "Serang", "Tangerang", "Cilegon", "Tangerang Selatan"
+    ]
+  },
+  districts: {
+    "Surabaya": ["Wonokromo", "Rungkut", "Mulyorejo", "Gubeng", "Tegalsari", "Tambaksari", "Sawahan", "Sukolilo", "Genteng", "Bubutan"],
+    "Sidoarjo": ["Waru", "Gedangan", "Buduran", "Candi", "Tanggulangin", "Porong", "Krian", "Taman", "Sukodono", "Sidoarjo"],
+    "Gresik": ["Kebomas", "Manyar", "Gresik", "Driyorejo", "Menganti", "Cerme", "Sidayu", "Wringinanom", "Dukun"],
+    "Ngawi": ["Kedunggalar", "Ngawi", "Paron", "Geneng", "Pitu", "Widodaren", "Mantingan", "Sine", "Ngrambe", "Jogorogo"],
+    "Jember": ["Kaliwates", "Patrang", "Sumbersari", "Karanganyar", "Ambulu", "Balung", "Kencong", "Rambipuji", "Ajung", "Mayang"],
+    "Malang": ["Kepanjen", "Singosari", "Lawang", "Dau", "Batu", "Lowokwaru", "Klojen", "Blimbing", "Sukun"],
+    "Semarang": ["Banyumanik", "Tembalang", "Pedurungan", "Genuk", "Semarang Barat", "Semarang Utara", "Semarang Timur", "Semarang Selatan", "Semarang Tengah"],
+    "Surakarta": ["Laweyan", "Serengan", "Pasar Kliwon", "Jebres", "Banjarsari"],
+    "Jakarta Selatan": ["Kebayoran Baru", "Kebayoran Lama", "Pesanggrahan", "Cilandak", "Pasar Minggu", "Jagakarsa", "Mampang Prapatan", "Pancoran", "Tebet", "Setiabudi"],
+    "Jakarta Pusat": ["Gambir", "Sawah Besar", "Kemayoran", "Senen", "Cempaka Putih", "Johar Baru", "Menteng", "Tanah Abang"]
+  }
+};
+
+function showGeoAutocomplete(type, inputEl) {
+  const val = inputEl.value.toLowerCase().trim();
+  const wrapper = inputEl.closest('.autocomplete-wrapper');
+  const listEl = wrapper.querySelector('.autocomplete-list');
+  listEl.innerHTML = '';
+
+  let list = [];
+  if (type === 'provinsi') {
+    list = INDONESIA_GEOGRAPHY.provinces;
+  } else if (type === 'kabupaten') {
+    const selectedProv = document.getElementById('inp-provinsi')?.value || '';
+    list = INDONESIA_GEOGRAPHY.regencies[selectedProv] || ["Kota Denpasar", "Kabupaten Badung", "Kabupaten Gianyar", "Kabupaten Buleleng", "Kabupaten Tabanan"];
+  } else if (type === 'kecamatan') {
+    const selectedKab = document.getElementById('inp-kabupaten')?.value || '';
+    list = INDONESIA_GEOGRAPHY.districts[selectedKab] || ["Kecamatan Kota", "Kecamatan Utara", "Kecamatan Selatan", "Kecamatan Timur", "Kecamatan Barat"];
+  }
+
+  // Deduplicate and sort list alphabetically
+  list = Array.from(new Set(list)).sort((a, b) => a.localeCompare(b));
+
+  let matches = [];
+  if (val === '') {
+    // default 5 items alphabetically
+    matches = list.slice(0, 5);
+  } else {
+    // filter items starting with input first, then containing
+    const startsWithMatches = list.filter(item => item.toLowerCase().startsWith(val));
+    const containsMatches = list.filter(item => !item.toLowerCase().startsWith(val) && item.toLowerCase().includes(val));
+    matches = [...startsWithMatches, ...containsMatches];
+  }
+
+  if (matches.length === 0) {
+    listEl.innerHTML = `<div style="padding:0.75rem 1rem;font-size:0.875rem;color:var(--muted-fg);">Tidak ditemukan</div>`;
+  } else {
+    matches.forEach(item => {
+      const div = document.createElement('div');
+      div.className = 'autocomplete-item';
+      div.textContent = item;
+      div.onclick = function (e) {
+        e.stopPropagation();
+        inputEl.value = item;
+        listEl.style.display = 'none';
+
+        // Clear sub-inputs
+        if (type === 'provinsi') {
+          const kabInp = document.getElementById('inp-kabupaten');
+          const kecInp = document.getElementById('inp-kecamatan');
+          if (kabInp) kabInp.value = '';
+          if (kecInp) kecInp.value = '';
+        } else if (type === 'kabupaten') {
+          const kecInp = document.getElementById('inp-kecamatan');
+          if (kecInp) kecInp.value = '';
+        }
+      };
+      listEl.appendChild(div);
+    });
+  }
+  listEl.style.display = 'block';
+}
+window.showGeoAutocomplete = showGeoAutocomplete;
+
+function filterGeoAutocomplete(type, inputEl) {
+  showGeoAutocomplete(type, inputEl);
+}
+window.filterGeoAutocomplete = filterGeoAutocomplete;
 
 // ── AUTOCOMPLETE KOTA ─────────────────────────────────────────
 const KOTA_LIST = ["Surabaya", "Sidoarjo", "Gresik", "Mojokerto", "Malang", "Pasuruan", "Bangkalan", "Sampang", "Pamekasan", "Sumenep"];
@@ -69,7 +234,7 @@ function renderAutocompleteList(inputEl) {
   const wrapper = inputEl.closest('.autocomplete-wrapper');
   const listEl = wrapper.querySelector('.autocomplete-list');
   listEl.innerHTML = '';
-  
+
   let matches = KOTA_LIST.filter(k => k.toLowerCase().includes(val));
   if (matches.length === 0) {
     listEl.innerHTML = `<div style="padding:0.75rem 1rem;font-size:0.875rem;color:var(--muted-fg);">Tidak ditemukan</div>`;
@@ -78,7 +243,7 @@ function renderAutocompleteList(inputEl) {
       const div = document.createElement('div');
       div.className = 'autocomplete-item';
       div.textContent = k;
-      div.onclick = function(e) {
+      div.onclick = function (e) {
         e.stopPropagation();
         inputEl.value = k;
         listEl.style.display = 'none';
@@ -109,11 +274,11 @@ function toggleAutocomplete(iconEl) {
   }
 }
 
-document.addEventListener('click', function(e) {
+document.addEventListener('click', function (e) {
   document.querySelectorAll('.autocomplete-wrapper').forEach(wrap => {
     if (!wrap.contains(e.target)) {
       const listEl = wrap.querySelector('.autocomplete-list');
-      if(listEl) listEl.style.display = 'none';
+      if (listEl) listEl.style.display = 'none';
     }
   });
 });
@@ -132,11 +297,11 @@ function clearRoleLS() {
 }
 
 // ── SPA NAVIGATION ────────────────────────────────────────────
-const PAGES = ['onboarding','login','home','leaderboard','absensi','profile','input','detail','edit'];
+const PAGES = ['onboarding', 'login', 'home', 'leaderboard', 'absensi', 'profile', 'input', 'detail', 'edit'];
 
 // Safe helper for inline HTML onclick (avoids object literal quoting issues)
 function navigateTab(tab) { navigate('home', { tab }); }
-function navigateId(id)  { navigate('detail', { id }); }
+function navigateId(id) { navigate('detail', { id }); }
 function navigatePending() { navigate('home', { tab: 'Pending' }); }
 
 function navigate(page, opts = {}) {
@@ -175,7 +340,30 @@ function navigate(page, opts = {}) {
   if (page === 'leaderboard') renderLeaderboard();
   if (page === 'absensi') renderAbsensi();
   if (page === 'profile') renderProfile();
-  if (page === 'input') renderInput(0);
+  if (page === 'input') {
+    gpsLocked = false;
+    newCustomerTemp = {
+      name: '',
+      phone: '',
+      email: '',
+      provinsi: '',
+      kabupaten: '',
+      kecamatan: '',
+      rt: '',
+      rw: '',
+      alamat: '',
+      patokan: '',
+      status: 'Aktif',
+      paket: '',
+      payment: 'Unpaid',
+      tempo: '--',
+      amount: 0,
+      confirmed: false,
+      submittedBy: '',
+      photo: false
+    };
+    renderInput(0);
+  }
   if (page === 'detail' && opts.id) renderDetail(opts.id);
 
   window.scrollTo(0, 0);
@@ -188,14 +376,14 @@ function buildBottomNav(containerId) {
   const role = currentRole;
 
   const left = [
-    { page: 'home',        label: 'Home',        icon: ICONS.home },
+    { page: 'home', label: 'Home', icon: ICONS.home },
     role === 'manager'
-      ? { page: 'leaderboard', label: 'Tim',         icon: ICONS.users }
+      ? { page: 'leaderboard', label: 'Leaderboard', icon: ICONS.users }
       : { page: 'leaderboard', label: 'Leaderboard', icon: ICONS.trophy },
   ];
   const right = [
     { page: 'absensi', label: 'Absensi', icon: ICONS.clock },
-    { page: 'profile', label: 'Profil',  icon: ICONS.user },
+    { page: 'profile', label: 'Profil', icon: ICONS.user },
   ];
 
   const navItemHTML = (item) => {
@@ -266,7 +454,7 @@ function renderHome(opts = {}) {
       <div class="summary-card">
         <div class="summary-card-header">
           <div>
-            <p style="font-size:0.75rem;font-weight:500;color:var(--muted-fg);letter-spacing:0.05em;">Tren Penjualan Tim (Agregat)</p>
+            <p style="font-size:0.75rem;font-weight:500;color:var(--muted-fg);letter-spacing:0.05em;">Leaderboard Penjualan Tim</p>
             <div style="display:flex;align-items:baseline;gap:0.5rem;margin-top:0.25rem;">
               <h2 class="summary-big">Rp ${ts.totalRevenueMonth} Jt</h2>
               <span class="trend-up">${ICONS.trending_up}+${ts.growth}%</span>
@@ -302,12 +490,12 @@ function renderHome(opts = {}) {
       const y = 100 - (s.value / max) * 80 - 10;
       return `${x},${y}`;
     }).join(' ');
-    const lastY = 100 - (trendData[trendData.length-1].value / max) * 80 - 10;
+    const lastY = 100 - (trendData[trendData.length - 1].value / max) * 80 - 10;
     sc.innerHTML = `
       <div class="summary-card">
         <div class="summary-card-header">
           <div>
-            <p style="font-size:0.75rem;font-weight:500;color:var(--muted-fg);letter-spacing:0.05em;">Tren Penjualan Pribadi</p>
+            <p style="font-size:0.75rem;font-weight:500;color:var(--muted-fg);letter-spacing:0.05em;">Leaderboard Penjualan Pribadi</p>
             <div style="display:flex;align-items:baseline;gap:0.5rem;margin-top:0.25rem;">
               <h2 class="summary-big">Rp 20 Jt</h2>
               <span class="trend-up">${ICONS.trending_up}+2,29%</span>
@@ -333,8 +521,8 @@ function renderHome(opts = {}) {
   // Mini stats
   const ms = document.getElementById('home-mini-stats');
   const miniCard = (icon, label, value, suffix, tone, pct) => {
-    const tones = { primary:'var(--primary-soft)', success:'var(--success-soft)', warning:'var(--warning-soft)' };
-    const toneFg = { primary:'var(--primary-deep)', success:'var(--success)', warning:'var(--warning-fg)' };
+    const tones = { primary: 'var(--primary-soft)', success: 'var(--success-soft)', warning: 'var(--warning-soft)' };
+    const toneFg = { primary: 'var(--primary-deep)', success: 'var(--success)', warning: 'var(--warning-fg)' };
     return `<div class="card mini-stat-card">
       <div style="width:2.25rem;height:2.25rem;border-radius:0.75rem;background:${tones[tone]};color:${toneFg[tone]};display:inline-flex;align-items:center;justify-content:center;">${icon}</div>
       <p style="font-size:0.75rem;color:var(--muted-fg);margin-top:0.5rem;font-weight:500;">${label}</p>
@@ -345,11 +533,11 @@ function renderHome(opts = {}) {
   const tgt = `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="none"><path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="currentColor" stroke-width="1.5"/><path d="M12 18C15.3137 18 18 15.3137 18 12C18 8.68629 15.3137 6 12 6C8.68629 6 6 8.68629 6 12C6 15.3137 8.68629 18 12 18Z" stroke="currentColor" stroke-width="1.5"/><path d="M12 14C13.1046 14 14 13.1046 14 12C14 10.8954 13.1046 10 12 10C10.8954 10 10 10.8954 10 12C10 13.1046 10.8954 14 12 14Z" stroke="currentColor" stroke-width="1.5"/></svg>`;
   if (role === 'manager') {
     const ts = DB.teamStats || {};
-    ms.innerHTML = miniCard(ICONS.users,'Marketing Aktif',ts.activeMarketers,'orang','primary') + miniCard(ICONS.trending_up,'Pertumbuhan',`+${ts.growth}%`,'QoQ','success');
+    ms.innerHTML = miniCard(ICONS.users, 'Marketing Aktif', ts.activeMarketers, 'orang', 'primary') + miniCard(ICONS.trending_up, 'Pertumbuhan', `+${ts.growth}%`, 'QoQ', 'success');
   } else if (role === 'admin') {
-    ms.innerHTML = miniCard(ICONS.inbox,'Menunggu Konfirmasi',pendingList.length,'data baru','warning') + miniCard(ICONS.alert_circle,'Tervalidasi',confirmedList.length,'pelanggan','success');
+    ms.innerHTML = miniCard(ICONS.inbox, 'Menunggu Konfirmasi', pendingList.length, 'data baru', 'warning') + miniCard(ICONS.alert_circle, 'Tervalidasi', confirmedList.length, 'pelanggan', 'success');
   } else {
-    ms.innerHTML = miniCard(tgt,'Target Bulan','120','deal','primary',68) + miniCard(ICONS.users,'Pelanggan Baru','34','bulan ini','success');
+    ms.innerHTML = miniCard(tgt, 'Target Bulan', '120', 'deal', 'primary', 68) + miniCard(ICONS.users, 'Pelanggan Baru', '34', 'bulan ini', 'success');
   }
 
   // Alert banner (admin only)
@@ -369,7 +557,7 @@ function renderHome(opts = {}) {
   }
 
   // Tabs
-  const allTabs = ['Aktif','Potensi','Tunda','Cabut'];
+  const allTabs = ['Aktif', 'Potensi', 'Tunda', 'Cabut'];
   const visibleTabs = role === 'admin' ? ['Pending', ...allTabs] : allTabs;
   if (!visibleTabs.includes(homeTab)) homeTab = role === 'admin' && pendingList.length ? 'Pending' : 'Aktif';
 
@@ -394,7 +582,7 @@ function setHomeTab(t) {
   const pendingList = customers.filter(c => !c.confirmed);
   const confirmedList = customers.filter(c => c.confirmed);
   const role = currentRole;
-  const allTabs = ['Aktif','Potensi','Tunda','Cabut'];
+  const allTabs = ['Aktif', 'Potensi', 'Tunda', 'Cabut'];
   const visibleTabs = role === 'admin' ? ['Pending', ...allTabs] : allTabs;
   const tabsEl = document.getElementById('home-tabs');
   if (!tabsEl) return;
@@ -427,15 +615,14 @@ function renderCustomerList() {
 
   list.innerHTML = filtered.map(c => {
     const isPending = !c.confirmed;
-    const statusMap = { Aktif:'success', Potensi:'warning', Tunda:'destructive', Cabut:'destructive' };
+    const statusMap = { Aktif: 'success', Potensi: 'warning', Tunda: 'destructive', Cabut: 'destructive' };
     const canEdit = role === 'admin';
     const canShift = role === 'admin' && c.status !== 'Aktif';
 
     let actionBtns = '';
     if (isPending && role === 'admin') {
-      actionBtns = `<div class="grid-2" style="margin-top:0.75rem;">
-        <button onclick="event.preventDefault();" style="color:var(--destructive);font-weight:600;font-size:0.875rem;padding:0.625rem;border-radius:0.75rem;background:var(--card);border:1px solid color-mix(in oklab,var(--destructive) 30%,transparent);">Tolak</button>
-        <button onclick="event.preventDefault();" style="color:#fff;font-weight:600;font-size:0.875rem;padding:0.625rem;border-radius:0.75rem;background:var(--success);">Konfirmasi</button>
+      actionBtns = `<div style="margin-top:0.75rem; display: flex;">
+        <button class="btn btn-primary" onclick="event.preventDefault(); event.stopPropagation(); confirmCustomer('${c.id}');" style="flex: 1; border-radius: 0.75rem;">Konfirmasi</button>
       </div>`;
     } else if (!isPending && (canEdit || canShift)) {
       const editBtn = canEdit ? `<a onclick="event.stopPropagation(); renderEdit('${c.id}');" style="display:flex;align-items:center;justify-content:center;gap:0.375rem;color:var(--primary);font-weight:600;font-size:0.875rem;padding:0.625rem;border-radius:0.75rem;background:var(--primary-soft);">${ICONS.pencil} Edit Data</a>` : '';
@@ -477,14 +664,14 @@ function renderLeaderboard() {
   const rest = lb.slice(3).filter(p => p.name.toLowerCase().includes(q));
 
   // Period switch
-  const periods = ['Minggu','Bulan','Tahun'];
+  const periods = ['Minggu', 'Bulan', 'Tahun'];
   document.getElementById('period-switch').innerHTML = periods.map(p =>
     `<button class="period-btn ${lbPeriod === p ? 'active' : ''}" onclick="lbPeriod='${p}';renderLeaderboard();">${p}</button>`
   ).join('');
   document.getElementById('lb-sub').textContent = `Top marketing periode ${lbPeriod.toLowerCase()} ini`;
 
   // Podium
-  const heights = ['h-20','h-28','h-16'];
+  const heights = ['h-20', 'h-28', 'h-16'];
   const order = [top3[1], top3[0], top3[2]]; // 2nd, 1st, 3rd
   const places = [2, 1, 3];
   const podiumEl = document.getElementById('podium');
@@ -561,9 +748,9 @@ function renderAbsensi() {
       </div>
       <div class="space-y-3 pb-4">
         ${lateRecap.map(r => {
-          const bg = r.lateCount >= 5 ? 'background:var(--destructive);color:#fff;' : r.lateCount >= 3 ? 'background:var(--warning);color:var(--warning-fg);' : 'background:var(--primary-soft);color:var(--primary-deep);';
-          const badgeCls = r.lateCount >= 5 ? 'background:var(--destructive-soft);color:var(--destructive);' : r.lateCount >= 3 ? 'background:var(--warning-soft);color:var(--warning-fg);' : 'background:var(--muted);color:var(--muted-fg);';
-          return `<div class="late-row">
+      const bg = r.lateCount >= 5 ? 'background:var(--destructive);color:#fff;' : r.lateCount >= 3 ? 'background:var(--warning);color:var(--warning-fg);' : 'background:var(--primary-soft);color:var(--primary-deep);';
+      const badgeCls = r.lateCount >= 5 ? 'background:var(--destructive-soft);color:var(--destructive);' : r.lateCount >= 3 ? 'background:var(--warning-soft);color:var(--warning-fg);' : 'background:var(--muted);color:var(--muted-fg);';
+      return `<div class="late-row">
             <div class="late-initials" style="${bg}">${r.initials}</div>
             <div style="flex:1;min-width:0;">
               <div style="display:flex;align-items:center;justify-content:space-between;gap:0.5rem;">
@@ -580,7 +767,7 @@ function renderAbsensi() {
               </div>
             </div>
           </div>`;
-        }).join('')}
+    }).join('')}
       </div>
     </section>`;
   } else {
@@ -636,7 +823,7 @@ function updateAbsenUI() {
   const outBtn = document.getElementById('checkout-btn');
   const inTime = document.getElementById('checkin-time');
   const outTime = document.getElementById('checkout-time');
-  
+
   if (state.in) {
     if (inTime) inTime.textContent = state.in;
     if (inBtn) inBtn.disabled = true;
@@ -651,11 +838,64 @@ function updateAbsenUI() {
   }
 }
 
-function doCheckinWithPhoto(event) {
-  if (event.target.files && event.target.files.length > 0) {
-    doCheckin();
+let cameraStream = null;
+let currentCameraAction = 'in';
+
+async function openCameraModal(type) {
+  currentCameraAction = type;
+  document.getElementById('camera-modal').classList.remove('hidden');
+  const video = document.getElementById('camera-video');
+  const modalTitle = document.querySelector('#camera-modal h3');
+
+  if (type === 'customer_photo') {
+    video.style.transform = 'scaleX(1)';
+    if (modalTitle) modalTitle.textContent = 'Ambil Foto Lokasi';
+  } else {
+    video.style.transform = 'scaleX(-1)';
+    if (modalTitle) modalTitle.textContent = 'Ambil Foto Selfie';
+  }
+
+  try {
+    const constraints = {
+      video: {
+        facingMode: type === 'customer_photo' ? 'environment' : 'user'
+      }
+    };
+    cameraStream = await navigator.mediaDevices.getUserMedia(constraints);
+    video.srcObject = cameraStream;
+  } catch (err) {
+    alert('Gagal mengakses kamera: ' + err.message);
+    closeCameraModal();
   }
 }
+
+function closeCameraModal() {
+  document.getElementById('camera-modal').classList.add('hidden');
+  if (cameraStream) {
+    cameraStream.getTracks().forEach(track => track.stop());
+    cameraStream = null;
+  }
+}
+
+function captureCameraPhoto() {
+  closeCameraModal();
+  if (currentCameraAction === 'in') {
+    doCheckin();
+    if(typeof showToast === 'function') showToast('Berhasil absen masuk');
+  } else if (currentCameraAction === 'out') {
+    doCheckout();
+    if(typeof showToast === 'function') showToast('Berhasil absen keluar');
+  } else if (currentCameraAction === 'customer_photo') {
+    newCustomerTemp.photo = true;
+    if (typeof showToast === 'function') showToast('Foto lokasi berhasil diambil');
+    renderInput(2);
+  }
+}
+
+function openCustomerCamera() {
+  openCameraModal('customer_photo');
+}
+window.openCustomerCamera = openCustomerCamera;
 
 function doCheckin() {
   const now = new Date().toLocaleTimeString('id-ID', { hour12: false });
@@ -686,9 +926,9 @@ function renderProfile() {
 
   // Stats
   const statsMap = {
-    manager:   [{l:'Tim',v:'24'}, {l:'Deal Tim',v:'487'}, {l:'Growth',v:'+9.8%'}],
-    admin:     [{l:'Validasi',v:'312'}, {l:'Hari Aktif',v:'210'}],
-    marketing: [{l:'Deal',v:'92'}, {l:'Hari Aktif',v:'124'}],
+    manager: [{ l: 'Tim', v: '24' }, { l: 'Deal Tim', v: '487' }, { l: 'Growth', v: '+9.8%' }],
+    admin: [{ l: 'Validasi', v: '312' }, { l: 'Hari Aktif', v: '210' }],
+    marketing: [{ l: 'Deal', v: '92' }, { l: 'Hari Aktif', v: '124' }],
   };
   const stats = statsMap[role] || [];
   const statsEl = document.getElementById('profile-stats');
@@ -705,35 +945,115 @@ function renderProfile() {
       <p class="group-item-value">${value}</p>
     </div>
   </div>`;
+  const infoItemEdit = (icon, label, value, field) => `<div class="group-item">
+    <div class="icon-wrap icon-wrap-sm icon-primary">${icon}</div>
+    <div class="group-item-content">
+      <p class="group-item-label">${label}</p>
+      <p class="group-item-value">${value}</p>
+    </div>
+    <button onclick="openEditProfileModal('${field}', '${value}')" style="background:none;border:none;color:var(--primary);cursor:pointer;padding:0.25rem;display:flex;align-items:center;">
+      ${ICONS.pencil}
+    </button>
+  </div>`;
+
   infoCard.innerHTML =
-    infoItem(ICONS.user, 'Username', firstName) +
+    infoItemEdit(ICONS.user, 'Username', firstName, 'name') +
     infoItem(ICONS.mail, 'Email', p.email || '') +
-    infoItem(ICONS.phone_icon, 'Telepon', p.phone || '');
+    infoItemEdit(ICONS.phone_icon, 'Telepon', p.phone || '', 'phone');
 
   buildBottomNav('profile-bottom-nav');
 }
 
 // ── INPUT (STEPPER) PAGE ──────────────────────────────────────
-const STEPS = ['Data Diri','Alamat','Jenis Paket'];
+const STEPS = ['Data Diri', 'Alamat', 'Jenis Paket'];
+
+function saveStepData(step) {
+  if (step === 0) {
+    newCustomerTemp.name = document.getElementById('inp-nama')?.value || '';
+    newCustomerTemp.phone = document.getElementById('inp-telepon')?.value || '';
+    newCustomerTemp.email = document.getElementById('inp-email')?.value || '';
+  } else if (step === 1) {
+    newCustomerTemp.provinsi = document.getElementById('inp-provinsi')?.value || '';
+    newCustomerTemp.kabupaten = document.getElementById('inp-kabupaten')?.value || '';
+    newCustomerTemp.kecamatan = document.getElementById('inp-kecamatan')?.value || '';
+    newCustomerTemp.rt = document.getElementById('inp-rt')?.value || '';
+    newCustomerTemp.rw = document.getElementById('inp-rw')?.value || '';
+    newCustomerTemp.patokan = document.getElementById('inp-patokan')?.value || '';
+  } else if (step === 2) {
+    newCustomerTemp.status = document.getElementById('inp-status')?.value || 'Aktif';
+    newCustomerTemp.paket = document.getElementById('inp-paket')?.value || '';
+  }
+}
+window.saveStepData = saveStepData;
+
+function nextStep(step) {
+  if (step === 0) {
+    const name = document.getElementById('inp-nama')?.value || '';
+    const phone = document.getElementById('inp-telepon')?.value || '';
+    if (!name || !phone) {
+      alert("Mohon lengkapi field yang wajib!");
+      return;
+    }
+  } else if (step === 1) {
+    const prov = document.getElementById('inp-provinsi')?.value || '';
+    const kab = document.getElementById('inp-kabupaten')?.value || '';
+    const kec = document.getElementById('inp-kecamatan')?.value || '';
+    if (!prov || !kab || !kec) {
+      alert("Mohon lengkapi field yang wajib!");
+      return;
+    }
+  }
+  saveStepData(step);
+  renderInput(step + 1);
+}
+window.nextStep = nextStep;
+
+function prevStep(step) {
+  saveStepData(step);
+  renderInput(step - 1);
+}
+window.prevStep = prevStep;
+
+function togglePaketSelect() {
+  const statusSelect = document.getElementById('inp-status');
+  const paketSelect = document.getElementById('inp-paket');
+  if (statusSelect && paketSelect) {
+    const reqSpan = paketSelect.closest('.field-wrap')?.previousElementSibling?.querySelector('.req');
+    if (statusSelect.value === 'Potensi') {
+      paketSelect.disabled = true;
+      paketSelect.style.background = '#e5e7eb';
+      paketSelect.style.color = '#9ca3af';
+      paketSelect.style.cursor = 'not-allowed';
+      paketSelect.value = '';
+      if (reqSpan) reqSpan.style.display = 'none';
+    } else {
+      paketSelect.disabled = false;
+      paketSelect.style.background = '';
+      paketSelect.style.color = '';
+      paketSelect.style.cursor = '';
+      if (reqSpan) reqSpan.style.display = '';
+    }
+  }
+}
+window.togglePaketSelect = togglePaketSelect;
 
 function renderInput(step = 0) {
   inputStep = step;
-  gpsLocked = false;
 
   // Stepper
   const stepperEl = document.getElementById('input-stepper');
   stepperEl.innerHTML = STEPS.map((s, i) => `<div class="step-item">
     <div class="step-bar ${i <= step ? 'done' : 'todo'}"></div>
-    <p class="step-label ${i === step ? 'active' : 'inactive'}">${i+1}. ${s}</p>
+    <p class="step-label ${i === step ? 'active' : 'inactive'}">${i + 1}. ${s}</p>
   </div>`).join('');
 
   // Content
   const content = document.getElementById('input-form-content');
   if (step === 0) {
     content.innerHTML = `<div class="card" style="padding:1.25rem;" class="space-y-4">
-      <div><label class="field-label">Nama Lengkap <span class="req">*</span></label><div class="field-wrap"><input class="input" placeholder="Nama lengkap pelanggan" /></div></div>
-      <div style="margin-top:1rem;"><label class="field-label">Nomor Telepon <span class="req">*</span></label><div class="field-wrap"><input class="input" placeholder="08xxxxxxxxxx" type="tel" /></div></div>
-      <div style="margin-top:1rem;"><label class="field-label">Email (Opsional)</label><div class="field-wrap"><input class="input" placeholder="nama@email.com" type="email" /></div></div>
+      <div><label class="field-label">Nama Lengkap <span class="req">*</span></label><div class="field-wrap"><input id="inp-nama" class="input" placeholder="Nama lengkap pelanggan" value="${newCustomerTemp.name || ''}" /></div></div>
+      <div style="margin-top:1rem;"><label class="field-label">Nomor Telepon <span class="req">*</span></label><div class="field-wrap"><input id="inp-telepon" class="input" placeholder="08xxxxxxxxxx" type="tel" value="${newCustomerTemp.phone || ''}" /></div></div>
+      <div style="margin-top:1rem;"><label class="field-label">Email (Opsional)</label><div class="field-wrap"><input id="inp-email" class="input" placeholder="nama@email.com" type="email" value="${newCustomerTemp.email || ''}" /></div></div>
       <div style="margin-top:1rem;"><label class="field-label">Foto KTP</label><div class="field-wrap">
         <button type="button" class="upload-zone">
           <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="none"><g clip-path="url(#upl)"><path d="M9 17V11L7 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M9 11L11 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M22 10V15C22 20 20 22 15 22H9C4 22 2 20 2 15V9C2 4 4 2 9 2H14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M22 10H18C15 10 14 9 14 6V2L22 10Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></g><defs><clipPath id="upl"><rect width="24" height="24" fill="none"/></clipPath></defs></svg>
@@ -743,49 +1063,73 @@ function renderInput(step = 0) {
     </div>`;
   } else if (step === 1) {
     content.innerHTML = `<div class="card" style="padding:1.25rem;">
-      <div id="gps-block" class="gps-block unlocked">
+      <div id="gps-block" class="gps-block ${gpsLocked ? 'locked' : 'unlocked'}">
         <div style="display:flex;align-items:flex-start;gap:0.75rem;">
-          <div class="gps-icon-wrap unlocked" id="gps-icon-wrap">
-            <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" stroke="none"><path d="M14.2199 21.6293C13.0399 21.6293 11.3699 20.7993 10.0499 16.8293L9.32988 14.6693L7.16988 13.9493C3.20988 12.6293 2.37988 10.9593 2.37988 9.77934C2.37988 8.60934 3.20988 6.92934 7.16988 5.59934L15.6599 2.76934C17.7799 2.05934 19.5499 2.26934 20.6399 3.34934C21.7299 4.42934 21.9399 6.20934 21.2299 8.32934L18.3999 16.8193C17.0699 20.7993 15.3999 21.6293 14.2199 21.6293Z"/><path d="M10.11 14.4C9.92005 14.4 9.73005 14.33 9.58005 14.18C9.29005 13.89 9.29005 13.41 9.58005 13.12L13.16 9.53C13.45 9.24 13.93 9.24 14.22 9.53C14.51 9.82 14.51 10.3 14.22 10.59L10.64 14.18C10.5 14.33 10.3 14.4 10.11 14.4Z"/></svg>
+          <div class="gps-icon-wrap ${gpsLocked ? 'locked' : 'unlocked'}" id="gps-icon-wrap">
+            ${gpsLocked ? `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="none"><path d="M7.75 11.9999L10.58 14.8299L16.25 9.16992" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>` : `<svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" stroke="none"><path d="M14.2199 21.6293C13.0399 21.6293 11.3699 20.7993 10.0499 16.8293L9.32988 14.6693L7.16988 13.9493C3.20988 12.6293 2.37988 10.9593 2.37988 9.77934C2.37988 8.60934 3.20988 6.92934 7.16988 5.59934L15.6599 2.76934C17.7799 2.05934 19.5499 2.26934 20.6399 3.34934C21.7299 4.42934 21.9399 6.20934 21.2299 8.32934L18.3999 16.8193C17.0699 20.7993 15.3999 21.6293 14.2199 21.6293Z"/><path d="M10.11 14.4C9.92005 14.4 9.73005 14.33 9.58005 14.18C9.29005 13.89 9.29005 13.41 9.58005 13.12L13.16 9.53C13.45 9.24 13.93 9.24 14.22 9.53C14.51 9.82 14.51 10.3 14.22 10.59L10.64 14.18C10.5 14.33 10.3 14.4 10.11 14.4Z"/></svg>`}
           </div>
           <div style="flex:1;">
-            <p id="gps-label" style="font-weight:600;font-size:0.875rem;">Aktifkan GPS</p>
-            <p id="gps-sublabel" style="font-size:0.75rem;color:var(--muted-fg);">Wajib untuk validasi data lapangan.</p>
-            <div class="gps-bars" id="gps-bars">
-              <div class="gps-bar-seg"></div><div class="gps-bar-seg"></div><div class="gps-bar-seg"></div>
-              <span style="font-size:0.6875rem;font-weight:600;margin-left:0.25rem;">—</span>
-            </div>
+            <p id="gps-label" style="font-weight:600;font-size:0.875rem;">${gpsLocked ? 'Lokasi Terkunci' : 'Aktifkan GPS'}</p>
+            <p id="gps-sublabel" style="font-size:0.75rem;color:var(--muted-fg);">${gpsLocked ? 'Akurasi: ±5m • -7.405, 111.938' : 'Wajib untuk validasi data lapangan.'}</p>
           </div>
-          <button type="button" id="gps-btn" onclick="lockGPS()" style="font-size:0.75rem;font-weight:600;color:var(--primary);padding:0.375rem 0.75rem;border-radius:0.5rem;background:var(--card);border:1px solid var(--border);cursor:pointer;">Lock</button>
+          <button type="button" id="gps-btn" onclick="lockGPS()" style="font-size:0.75rem;font-weight:600;color:var(--primary);padding:0.375rem 0.75rem;border-radius:0.5rem;background:var(--card);border:1px solid var(--border);cursor:pointer;">${gpsLocked ? 'Refresh' : 'Lock'}</button>
         </div>
       </div>
-      <div style="margin-top:1rem;"><label class="field-label">Provinsi <span class="req">*</span></label><div class="field-wrap"><div style="position:relative;"><select class="input" style="appearance:none;padding-right:2.5rem;"><option value="">Pilih Provinsi</option><option>Jawa Timur</option><option>Jawa Tengah</option></select><svg style="position:absolute;right:0.75rem;top:50%;transform:translateY(-50%);pointer-events:none;" viewBox="0 0 24 24" width="16" height="16" fill="currentColor" stroke="none"><path d="M12 16.7996C11.3 16.7996 10.6 16.5296 10.07 15.9996L3.55002 9.47965C3.26002 9.18965 3.26002 8.70965 3.55002 8.41965C3.84002 8.12965 4.32002 8.12965 4.61002 8.41965L11.13 14.9396C11.61 15.4196 12.39 15.4196 12.87 14.9396L19.39 8.41965C19.68 8.12965 20.16 8.12965 20.45 8.41965C20.74 8.70965 20.74 9.18965 20.45 9.47965L13.93 15.9996C13.4 16.5296 12.7 16.7996 12 16.7996Z"/></svg></div></div></div>
-      <div style="margin-top:1rem;">
-        <label class="field-label">Kota / Kecamatan <span class="req">*</span></label>
-        <div class="field-wrap">
-          <div class="autocomplete-wrapper">
-            <input type="text" class="input" placeholder="Pilih atau Ketik Kota / Kecamatan" style="padding-right:2.5rem;" onfocus="showAutocomplete(this)" oninput="filterAutocomplete(this)" autocomplete="off" />
-            <svg onclick="toggleAutocomplete(this)" style="position:absolute;right:0.75rem;top:50%;transform:translateY(-50%);cursor:pointer;" viewBox="0 0 24 24" width="16" height="16" fill="currentColor" stroke="none"><path d="M12 16.7996C11.3 16.7996 10.6 16.5296 10.07 15.9996L3.55002 9.47965C3.26002 9.18965 3.26002 8.70965 3.55002 8.41965C3.84002 8.12965 4.32002 8.12965 4.61002 8.41965L11.13 14.9396C11.61 15.4196 12.39 15.4196 12.87 14.9396L19.39 8.41965C19.68 8.12965 20.16 8.12965 20.45 8.41965C20.74 8.70965 20.74 9.18965 20.45 9.47965L13.93 15.9996C13.4 16.5296 12.7 16.7996 12 16.7996Z"/></svg>
-            <div class="autocomplete-list"></div>
-          </div>
+      <div style="margin-top:1rem;"><label class="field-label">Provinsi <span class="req">*</span></label><div class="field-wrap">
+        <div class="autocomplete-wrapper">
+          <input id="inp-provinsi" type="text" class="input" placeholder="Ketik atau pilih Provinsi" value="${newCustomerTemp.provinsi || ''}" onfocus="showGeoAutocomplete('provinsi', this)" oninput="filterGeoAutocomplete('provinsi', this)" autocomplete="off" />
+          <div class="autocomplete-list"></div>
         </div>
-      </div>
+      </div></div>
+      <div style="margin-top:1rem;"><label class="field-label">Kabupaten/Kota <span class="req">*</span></label><div class="field-wrap">
+        <div class="autocomplete-wrapper">
+          <input id="inp-kabupaten" type="text" class="input" placeholder="Ketik atau pilih Kabupaten/Kota" value="${newCustomerTemp.kabupaten || ''}" onfocus="showGeoAutocomplete('kabupaten', this)" oninput="filterGeoAutocomplete('kabupaten', this)" autocomplete="off" />
+          <div class="autocomplete-list"></div>
+        </div>
+      </div></div>
+      <div style="margin-top:1rem;"><label class="field-label">Kecamatan/Desa <span class="req">*</span></label><div class="field-wrap">
+        <div class="autocomplete-wrapper">
+          <input id="inp-kecamatan" type="text" class="input" placeholder="Ketik atau pilih Kecamatan/Desa" value="${newCustomerTemp.kecamatan || ''}" onfocus="showGeoAutocomplete('kecamatan', this)" oninput="filterGeoAutocomplete('kecamatan', this)" autocomplete="off" />
+          <div class="autocomplete-list"></div>
+        </div>
+      </div></div>
       <div style="margin-top:1rem;display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;">
-        <div><label class="field-label">RT</label><div class="field-wrap"><input class="input" placeholder="00" /></div></div>
-        <div><label class="field-label">RW</label><div class="field-wrap"><input class="input" placeholder="00" /></div></div>
+        <div><label class="field-label">RT</label><div class="field-wrap"><input id="inp-rt" class="input" placeholder="00" value="${newCustomerTemp.rt || ''}" /></div></div>
+        <div><label class="field-label">RW</label><div class="field-wrap"><input id="inp-rw" class="input" placeholder="00" value="${newCustomerTemp.rw || ''}" /></div></div>
       </div>
-      <div style="margin-top:1rem;"><label class="field-label">Alamat Patokan</label><div class="field-wrap"><textarea class="input" rows="3" placeholder="Mis. depan minimarket, dekat masjid..."></textarea></div></div>
+      <div style="margin-top:1rem;"><label class="field-label">Alamat Patokan</label><div class="field-wrap"><textarea id="inp-patokan" class="input" rows="3" placeholder="Mis. depan minimarket, dekat masjid...">${newCustomerTemp.patokan || ''}</textarea></div></div>
     </div>`;
   } else {
     content.innerHTML = `<div class="card" style="padding:1.25rem;">
-      <div style="margin-bottom:1rem;"><label class="field-label">Jenis Pelanggan <span class="req">*</span></label><div class="field-wrap"><div style="position:relative;"><select class="input" style="appearance:none;padding-right:2.5rem;"><option value="">Personal / Business</option><option>Personal</option><option>Business</option></select><svg style="position:absolute;right:0.75rem;top:50%;transform:translateY(-50%);pointer-events:none;" viewBox="0 0 24 24" width="16" height="16" fill="currentColor" stroke="none"><path d="M12 16.7996C11.3 16.7996 10.6 16.5296 10.07 15.9996L3.55002 9.47965C3.26002 9.18965 3.26002 8.70965 3.55002 8.41965C3.84002 8.12965 4.32002 8.12965 4.61002 8.41965L11.13 14.9396C11.61 15.4196 12.39 15.4196 12.87 14.9396L19.39 8.41965C19.68 8.12965 20.16 8.12965 20.45 8.41965C20.74 8.70965 20.74 9.18965 20.45 9.47965L13.93 15.9996C13.4 16.5296 12.7 16.7996 12 16.7996Z"/></svg></div></div></div>
-      <div style="margin-bottom:1rem;"><label class="field-label">Pilihan Paket <span class="req">*</span></label><div class="field-wrap"><div style="position:relative;"><select class="input" style="appearance:none;padding-right:2.5rem;"><option value="">Pilih paket internet</option><option>Home Light 10Mbps</option><option>Home Advanced 20Mbps</option><option>Home Ultra 50Mbps</option><option>Business Ultra 200Mbps</option></select><svg style="position:absolute;right:0.75rem;top:50%;transform:translateY(-50%);pointer-events:none;" viewBox="0 0 24 24" width="16" height="16" fill="currentColor" stroke="none"><path d="M12 16.7996C11.3 16.7996 10.6 16.5296 10.07 15.9996L3.55002 9.47965C3.26002 9.18965 3.26002 8.70965 3.55002 8.41965C3.84002 8.12965 4.32002 8.12965 4.61002 8.41965L11.13 14.9396C11.61 15.4196 12.39 15.4196 12.87 14.9396L19.39 8.41965C19.68 8.12965 20.16 8.12965 20.45 8.41965C20.74 8.70965 20.74 9.18965 20.45 9.47965L13.93 15.9996C13.4 16.5296 12.7 16.7996 12 16.7996Z"/></svg></div></div></div>
+      <div style="margin-bottom:1rem;"><label class="field-label">Jenis Pelanggan <span class="req">*</span></label><div class="field-wrap"><div style="position:relative;">
+        <select id="inp-status" class="input" style="appearance:none;padding-right:2.5rem;" onchange="togglePaketSelect()">
+          <option value="Aktif" ${newCustomerTemp.status === 'Aktif' ? 'selected' : ''}>Aktif</option>
+          <option value="Potensi" ${newCustomerTemp.status === 'Potensi' ? 'selected' : ''}>Potensi</option>
+        </select>
+        <svg style="position:absolute;right:0.75rem;top:50%;transform:translateY(-50%);pointer-events:none;" viewBox="0 0 24 24" width="16" height="16" fill="currentColor" stroke="none"><path d="M12 16.7996C11.3 16.7996 10.6 16.5296 10.07 15.9996L3.55002 9.47965C3.26002 9.18965 3.26002 8.70965 3.55002 8.41965C3.84002 8.12965 4.32002 8.12965 4.61002 8.41965L11.13 14.9396C11.61 15.4196 12.39 15.4196 12.87 14.9396L19.39 8.41965C19.68 8.12965 20.16 8.12965 20.45 8.41965C20.74 8.70965 20.74 9.18965 20.45 9.47965L13.93 15.9996C13.4 16.5296 12.7 16.7996 12 16.7996Z"/></svg></div></div></div>
+      <div style="margin-bottom:1rem;"><label class="field-label">Pilihan Paket <span class="req">*</span></label><div class="field-wrap"><div style="position:relative;">
+        <select id="inp-paket" class="input" style="appearance:none;padding-right:2.5rem;">
+          <option value="">Pilih paket internet</option>
+          <option value="Home Light 10Mbps" ${newCustomerTemp.paket === 'Home Light 10Mbps' ? 'selected' : ''}>Home Light 10Mbps</option>
+          <option value="Home Advanced 20Mbps" ${newCustomerTemp.paket === 'Home Advanced 20Mbps' ? 'selected' : ''}>Home Advanced 20Mbps</option>
+          <option value="Home Ultra 50Mbps" ${newCustomerTemp.paket === 'Home Ultra 50Mbps' ? 'selected' : ''}>Home Ultra 50Mbps</option>
+          <option value="Business Ultra 200Mbps" ${newCustomerTemp.paket === 'Business Ultra 200Mbps' ? 'selected' : ''}>Business Ultra 200Mbps</option>
+        </select>
+        <svg style="position:absolute;right:0.75rem;top:50%;transform:translateY(-50%);pointer-events:none;" viewBox="0 0 24 24" width="16" height="16" fill="currentColor" stroke="none"><path d="M12 16.7996C11.3 16.7996 10.6 16.5296 10.07 15.9996L3.55002 9.47965C3.26002 9.18965 3.26002 8.70965 3.55002 8.41965C3.84002 8.12965 4.32002 8.12965 4.61002 8.41965L11.13 14.9396C11.61 15.4196 12.39 15.4196 12.87 14.9396L19.39 8.41965C19.68 8.12965 20.16 8.12965 20.45 8.41965C20.74 8.70965 20.74 9.18965 20.45 9.47965L13.93 15.9996C13.4 16.5296 12.7 16.7996 12 16.7996Z"/></svg></div></div></div>
       <div style="margin-bottom:1rem;"><label class="field-label">Foto Bukti Lokasi</label><div class="field-wrap">
-        <div class="photo-zone">
-          ${ICONS.map_pin_sm}
-          <span>Ambil Foto Lokasi Pelanggan</span>
-          <span>Foto akan ditandai dengan koordinat GPS</span>
-        </div>
+        <button type="button" class="photo-zone" onclick="openCustomerCamera()">
+          ${newCustomerTemp.photo ? `
+            <div style="color:var(--success); display:flex; flex-direction:column; align-items:center; gap:0.25rem;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:2rem; height:2rem;"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+              <span>Foto Tersimpan</span>
+              <span>Tap untuk mengambil ulang foto</span>
+            </div>
+          ` : `
+            ${ICONS.map_pin_sm}
+            <span>Ambil Foto Lokasi Pelanggan</span>
+            <span>Foto akan ditandai dengan koordinat GPS</span>
+          `}
+        </button>
       </div></div>
       <div class="confirm-note">
         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="none"><path d="M7.75 11.9999L10.58 14.8299L16.25 9.16992" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -796,14 +1140,71 @@ function renderInput(step = 0) {
 
   // Actions
   const actions = document.getElementById('input-form-actions');
-  actions.innerHTML = (step > 0 ? `<button type="button" class="btn btn-card" style="border-radius:0.75rem;" onclick="renderInput(${step-1})">Kembali</button>` : '') +
-    `<button type="button" class="btn btn-primary" style="border-radius:0.75rem;" onclick="${step < 2 ? `renderInput(${step+1})` : `navigate('home')`}">${step === 2 ? 'Kirim' : 'Selanjutnya'}</button>`;
+  actions.innerHTML = (step > 0 ? `<button type="button" class="btn btn-card" style="border-radius:0.75rem;" onclick="prevStep(${step})">Kembali</button>` : '') +
+    `<button type="button" class="btn btn-primary" style="border-radius:0.75rem;" onclick="${step < 2 ? `nextStep(${step})` : `submitInput()`}">${step === 2 ? 'Kirim' : 'Selanjutnya'}</button>`;
+
+  if (step === 2) {
+    togglePaketSelect();
+  }
 }
+window.renderInput = renderInput;
 
 function inputBack() {
   if (inputStep === 0) navigate('home');
-  else renderInput(inputStep - 1);
+  else prevStep(inputStep);
 }
+window.inputBack = inputBack;
+
+function submitInput() {
+  saveStepData(2);
+  const isAktif = newCustomerTemp.status === 'Aktif';
+  if (isAktif && !newCustomerTemp.paket) {
+    alert("Mohon lengkapi field yang wajib!");
+    return;
+  }
+
+  const newId = "X" + (DB.customers.length + 1904) + "HH";
+  const alamatCombined = "Kec. " + newCustomerTemp.kecamatan + ", " + newCustomerTemp.kabupaten;
+  
+  const pkgAmounts = {
+    "Home Light 10Mbps": 150000,
+    "Home Advanced 20Mbps": 220000,
+    "Home Ultra 50Mbps": 350000,
+    "Business Ultra 200Mbps": 850000
+  };
+  const amount = isAktif ? (pkgAmounts[newCustomerTemp.paket] || 150000) : 0;
+  const paketStr = isAktif ? newCustomerTemp.paket : '-';
+
+  const now = new Date();
+  const dateOptions = { day: 'numeric', month: 'long', year: 'numeric' };
+  const registeredDate = now.toLocaleDateString('id-ID', dateOptions);
+
+  const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 16);
+  const tempoDate = nextMonth.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+
+  const newCustomer = {
+    id: newId,
+    name: newCustomerTemp.name,
+    status: newCustomerTemp.status,
+    payment: "Unpaid",
+    tempo: tempoDate,
+    paket: paketStr,
+    alamat: alamatCombined,
+    phone: newCustomerTemp.phone,
+    email: newCustomerTemp.email || "-",
+    registered: registeredDate,
+    amount: amount,
+    confirmed: false,
+    submittedBy: DB.roleProfiles[currentRole]?.name || 'Budiono Siregar'
+  };
+
+  DB.customers.unshift(newCustomer);
+  saveDB();
+
+  if(typeof showToast === 'function') showToast('Pelanggan baru berhasil ditambahkan');
+  navigate('home');
+}
+window.submitInput = submitInput;
 
 function lockGPS() {
   gpsLocked = true;
@@ -812,13 +1213,37 @@ function lockGPS() {
   const label = document.getElementById('gps-label');
   const sublabel = document.getElementById('gps-sublabel');
   const btn = document.getElementById('gps-btn');
-  const bars = document.getElementById('gps-bars');
   if (block) { block.className = 'gps-block locked'; }
-  if (iconWrap) { iconWrap.className = 'gps-icon-wrap locked'; iconWrap.innerHTML = `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="none"><path d="M7.75 11.9999L10.58 14.8299L16.25 9.16992" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`; }
+  if (iconWrap) { iconWrap.className = 'gps-icon-wrap locked'; iconWrap.innerHTML = `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="none"><path d="M7.75 11.9999L10.58 14.8299L16.25 9.16992" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>`; }
   if (label) label.textContent = 'Lokasi Terkunci';
   if (sublabel) sublabel.textContent = 'Akurasi: ±5m • -7.405, 111.938';
   if (btn) btn.textContent = 'Refresh';
-  if (bars) bars.innerHTML = `<div class="gps-bar-seg on"></div><div class="gps-bar-seg on"></div><div class="gps-bar-seg on"></div><span style="font-size:0.6875rem;font-weight:600;margin-left:0.25rem;color:var(--success);">Akurat</span>`;
+
+  const prov = document.getElementById('inp-provinsi');
+  const kab = document.getElementById('inp-kabupaten');
+  const kec = document.getElementById('inp-kecamatan');
+  if (prov) prov.value = 'Jawa Timur';
+  if (kab) kab.value = 'Surabaya';
+  if (kec) kec.value = 'Wonokromo';
+}
+window.lockGPS = lockGPS;
+
+function exportExcel() {
+  const lateRecap = DB.lateRecap || [];
+  let csvContent = "data:text/csv;charset=utf-8,";
+  csvContent += "Nama,Inisial,Jumlah Telat\n";
+  lateRecap.forEach(function (rowArray) {
+    let row = `${rowArray.name},${rowArray.initials},${rowArray.lateCount}`;
+    csvContent += row + "\n";
+  });
+
+  var encodedUri = encodeURI(csvContent);
+  var link = document.createElement("a");
+  link.setAttribute("href", encodedUri);
+  link.setAttribute("download", "rekap_absensi_tim.csv");
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
 }
 
 // ── DETAIL PELANGGAN PAGE ──────────────────────────────────────
@@ -852,7 +1277,7 @@ function renderDetail(id) {
         ${detailRowLink('Email', c.email, `mailto:${c.email}`)}
         ${detailRow('Tgl Registrasi', c.registered)}
       </div>
-      <a href="https://wa.me/${c.phone.replace(/\D/g,'')}" target="_blank" rel="noreferrer"
+      <a href="https://wa.me/${c.phone.replace(/\D/g, '')}" target="_blank" rel="noreferrer"
         style="margin-top:1rem;width:100%;display:flex;align-items:center;justify-content:center;gap:0.5rem;background:var(--success);color:var(--success-fg);font-weight:600;padding:0.875rem;border-radius:0.75rem;box-shadow:var(--shadow-card-hover);">
         ${ICONS.phone_icon} Hubungi via WhatsApp
       </a>
@@ -888,6 +1313,10 @@ function renderDetail(id) {
       <button style="margin-top:0.75rem;width:100%;display:flex;align-items:center;justify-content:center;gap:0.5rem;background:var(--primary);color:var(--primary-fg);font-weight:600;padding:0.875rem;border-radius:0.75rem;box-shadow:var(--shadow-card-hover);border:none;cursor:pointer;">
         ${ICONS.nav_icon} Buka di Maps
       </button>
+    </div>
+    <div style="text-align:center; padding:1rem 0; margin-bottom:1rem;">
+      <p style="font-size:0.75rem; color:var(--muted-fg);">Diinput oleh:</p>
+      <p style="font-size:0.875rem; font-weight:600; color:var(--foreground);">${c.submittedBy || 'Marketing Lapangan'}</p>
     </div>`;
 }
 
@@ -896,9 +1325,9 @@ function renderEdit(id) {
   const c = customers.find(x => x.id === id);
   if (!c) { navigate('home'); return; }
   selectedDetail = c;
-  
+
   navigate('edit');
-  
+
   const content = document.getElementById('edit-form-content');
   content.innerHTML = `
     <div class="card" style="padding:1.25rem;">
@@ -932,11 +1361,13 @@ function renderEdit(id) {
         <label class="field-label" style="margin-bottom:0;">Pilihan Paket <span class="req">*</span></label>
         <span style="display:block;font-size:0.65rem;color:var(--muted-fg);margin-bottom:0.25rem;">Data sebelumnya: ${c.paket || 'Belum diatur'}</span>
         <div class="field-wrap"><div style="position:relative;">
-        <select id="edit-paket" class="input" style="appearance:none;padding-right:2.5rem;">
+        <select id="edit-paket" class="input" style="appearance:none;padding-right:2.5rem;${c.status === 'Potensi' ? 'background:#e5e7eb;color:#9ca3af;cursor:not-allowed;' : ''}" ${c.status === 'Potensi' ? 'disabled' : ''}>
+          ${c.status === 'Potensi' ? `<option value="-">-</option>` : `
           <option value="Home Light 10Mbps" ${c.paket === 'Home Light 10Mbps' ? 'selected' : ''}>Home Light 10Mbps</option>
           <option value="Home Advanced 20Mbps" ${c.paket === 'Home Advanced 20Mbps' ? 'selected' : ''}>Home Advanced 20Mbps</option>
           <option value="Home Ultra 50Mbps" ${c.paket === 'Home Ultra 50Mbps' ? 'selected' : ''}>Home Ultra 50Mbps</option>
           <option value="Business Ultra 200Mbps" ${c.paket === 'Business Ultra 200Mbps' ? 'selected' : ''}>Business Ultra 200Mbps</option>
+          `}
         </select>
         <svg style="position:absolute;right:0.75rem;top:50%;transform:translateY(-50%);pointer-events:none;" viewBox="0 0 24 24" width="16" height="16" fill="currentColor" stroke="none"><path d="M12 16.7996C11.3 16.7996 10.6 16.5296 10.07 15.9996L3.55002 9.47965C3.26002 9.18965 3.26002 8.70965 3.55002 8.41965C3.84002 8.12965 4.32002 8.12965 4.61002 8.41965L11.13 14.9396C11.61 15.4196 12.39 15.4196 12.87 14.9396L19.39 8.41965C19.68 8.12965 20.16 8.12965 20.45 8.41965C20.74 8.70965 20.74 9.18965 20.45 9.47965L13.93 15.9996C13.4 16.5296 12.7 16.7996 12 16.7996Z"/></svg>
       </div></div></div>
@@ -950,20 +1381,32 @@ function saveEdit() {
   const phone = document.getElementById('edit-phone').value;
   const email = document.getElementById('edit-email').value;
   const kota = document.getElementById('edit-kota').value;
-  const paket = document.getElementById('edit-paket').value;
-  
+  const isPotensi = selectedDetail.status === 'Potensi';
+  const paket = isPotensi ? '-' : document.getElementById('edit-paket').value;
+
   if (!name || !phone || !kota) {
     alert("Mohon lengkapi field yang wajib!");
     return;
   }
-  
+
+  const pkgAmounts = {
+    "Home Light 10Mbps": 150000,
+    "Home Advanced 20Mbps": 220000,
+    "Home Ultra 50Mbps": 350000,
+    "Business Ultra 200Mbps": 850000
+  };
+
   selectedDetail.name = name;
   selectedDetail.phone = phone;
   selectedDetail.email = email;
   selectedDetail.alamat = kota;
   selectedDetail.paket = paket;
-  
+  selectedDetail.amount = isPotensi ? 0 : (pkgAmounts[paket] || 150000);
+
+  saveDB();
+
   navigateId(selectedDetail.id);
+  if (typeof showToast === 'function') showToast('Data pelanggan berhasil diubah');
 }
 
 function detailRow(label, value, canCopy) {
@@ -1021,7 +1464,7 @@ function openSheet(customerId) {
         <button class="choice-btn" onclick="selectChoice('Potensi',this)">Potensi</button>
       `;
     } else {
-      const allStatuses = ['Aktif','Potensi','Tunda','Cabut'].filter(s => s !== c.status);
+      const allStatuses = ['Aktif', 'Potensi', 'Tunda', 'Cabut'].filter(s => s !== c.status);
       document.getElementById('sheet-choices').innerHTML = allStatuses.map(s =>
         `<button class="choice-btn" onclick="selectChoice('${s}',this)">${s}</button>`
       ).join('');
@@ -1045,6 +1488,7 @@ function openSheet(customerId) {
 function handleSheetHapus() {
   if (confirm(`Apakah Anda yakin ingin menghapus data pelanggan ${sheetCustomer.name}?`)) {
     DB.customers = DB.customers.filter(x => x.id !== sheetCustomer.id);
+    saveDB();
     closeSheet();
     renderCustomerList();
   }
@@ -1053,8 +1497,10 @@ function handleSheetHapus() {
 function handleSheetCabut() {
   if (confirm(`Apakah Anda yakin ingin mencabut pelanggan ${sheetCustomer.name}?`)) {
     sheetCustomer.status = 'Cabut';
+    saveDB();
     closeSheet();
     renderCustomerList();
+    if(typeof showToast === 'function') showToast('Status pelanggan berhasil diubah');
   }
 }
 
@@ -1089,13 +1535,26 @@ function confirmSheet() {
     return;
   }
 
+  const pkgAmounts = {
+    "Home Light 10Mbps": 150000,
+    "Home Advanced 20Mbps": 220000,
+    "Home Ultra 50Mbps": 350000,
+    "Business Ultra 200Mbps": 850000
+  };
+
   if (sheetChoice === 'Aktif') {
     sheetCustomer.paket = document.getElementById('paket-select').value;
+    sheetCustomer.amount = pkgAmounts[sheetCustomer.paket] || 150000;
+  } else if (sheetChoice === 'Potensi') {
+    sheetCustomer.paket = '-';
+    sheetCustomer.amount = 0;
   }
-  
+
   sheetCustomer.status = sheetChoice;
+  saveDB();
   closeSheet();
   renderCustomerList();
+  if(typeof showToast === 'function') showToast('Status pelanggan berhasil diubah');
 }
 function closeSheet() {
   document.getElementById('action-sheet').classList.add('hidden');
@@ -1103,14 +1562,76 @@ function closeSheet() {
   sheetCustomer = null;
 }
 
+// ── EDIT PROFILE LOGIC ──────────────────────────────────────
+function openEditProfileModal(field, currentValue) {
+  document.getElementById('edit-profile-field').value = field;
+  document.getElementById('edit-profile-input').value = currentValue;
+  document.getElementById('edit-profile-input').placeholder = field === 'name' ? 'Masukkan nama baru' : 'Masukkan nomor telepon baru';
+  document.getElementById('edit-profile-modal').classList.remove('hidden');
+}
+
+function closeEditProfileModal() {
+  document.getElementById('edit-profile-modal').classList.add('hidden');
+}
+
+function saveProfileEdit() {
+  const field = document.getElementById('edit-profile-field').value;
+  const val = document.getElementById('edit-profile-input').value;
+
+  if (!val) {
+    alert('Nilai tidak boleh kosong');
+    return;
+  }
+
+  const role = currentRole;
+  if (DB.roleProfiles[role]) {
+    if (field === 'name') {
+      DB.roleProfiles[role].name = val;
+    } else if (field === 'phone') {
+      DB.roleProfiles[role].phone = val;
+    }
+    saveDB();
+  }
+
+  closeEditProfileModal();
+  renderProfile();
+  if (typeof showToast === 'function') showToast('Profil berhasil diubah');
+}
+
+function updateProfileAvatar(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const url = URL.createObjectURL(file);
+  const role = currentRole;
+  if (DB.roleProfiles[role]) {
+    DB.roleProfiles[role].avatar = url;
+    saveDB();
+  }
+  renderProfile();
+  if (typeof showToast === 'function') showToast('Foto profil berhasil diubah');
+}
+
+// ── TOAST LOGIC ───────────────────────────────────────────────
+function showToast(msg) {
+  const toast = document.getElementById('toast-container');
+  const toastMsg = document.getElementById('toast-msg');
+  if (toast && toastMsg) {
+    toastMsg.textContent = msg;
+    toast.style.top = '1.5rem';
+    setTimeout(() => {
+      toast.style.top = '-100px';
+    }, 3000);
+  }
+}
+
 // ── LOGIN LOGIC ────────────────────────────────────────────────
 let selectedRole = 'marketing';
 
 function buildLoginRoles() {
   const roles = [
-    { value:'marketing', icon: `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="none"><g clip-path="url(#br)"><path d="M7.99995 22H15.9999C20.0199 22 20.7399 20.39 20.9499 18.43L21.6999 10.43C21.9699 7.99 21.2699 6 16.9999 6H6.99995C2.72995 6 2.02995 7.99 2.29995 10.43L3.04995 18.43C3.25995 20.39 3.97995 22 7.99995 22Z" stroke="currentColor" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/><path d="M8 6V5.2C8 3.43 8 2 11.2 2H12.8C16 2 16 3.43 16 5.2V6" stroke="currentColor" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/><path d="M14 13V14C14 14.01 14 14.01 14 14.02C14 15.11 13.99 16 12 16C10.02 16 10 15.12 10 14.03V13C10 12 10 12 11 12H13C14 12 14 12 14 13Z" stroke="currentColor" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/></g><defs><clipPath id="br"><rect width="24" height="24" fill="none"/></clipPath></defs></svg>`, bg:'#3B82F611', iconColor:'#2563EB', label:'Marketing' },
-    { value:'admin', icon: `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="none"><g clip-path="url(#sh)"><path d="M10.49 2.23019L5.50003 4.11019C4.35003 4.54019 3.41003 5.90019 3.41003 7.12019V14.5502C3.41003 15.7302 4.19003 17.2802 5.14003 17.9902L9.44003 21.2002C10.85 22.2602 13.17 22.2602 14.58 21.2002L18.88 17.9902C19.83 17.2802 20.61 15.7302 20.61 14.5502V7.12019C20.61 5.89019 19.67 4.53019 18.52 4.10019L13.53 2.23019C12.68 1.92019 11.32 1.92019 10.49 2.23019Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M9.05005 11.87L10.66 13.48L14.96 9.18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></g><defs><clipPath id="sh"><rect width="24" height="24" fill="none"/></clipPath></defs></svg>`, bg:'#10B98111', iconColor:'#059669', label:'Admin' },
-    { value:'manager', icon: `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="none"><g clip-path="url(#bc)"><path d="M18.32 11.9992C20.92 11.9992 22 10.9992 21.04 7.7192C20.39 5.5092 18.49 3.6092 16.28 2.9592C13 1.9992 12 3.0792 12 5.6792V8.5592C12 10.9992 13 11.9992 15 11.9992H18.32Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M20.0001 14.6998C19.0701 19.3298 14.6301 22.6898 9.58005 21.8698C5.79005 21.2598 2.74005 18.2098 2.12005 14.4198C1.31005 9.38977 4.65005 4.94977 9.26005 4.00977" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></g><defs><clipPath id="bc"><rect width="24" height="24" fill="none"/></clipPath></defs></svg>`, bg:'#6366F111', iconColor:'#4F46E5', label:'Manager' },
+    { value: 'marketing', icon: `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="none"><g clip-path="url(#br)"><path d="M7.99995 22H15.9999C20.0199 22 20.7399 20.39 20.9499 18.43L21.6999 10.43C21.9699 7.99 21.2699 6 16.9999 6H6.99995C2.72995 6 2.02995 7.99 2.29995 10.43L3.04995 18.43C3.25995 20.39 3.97995 22 7.99995 22Z" stroke="currentColor" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/><path d="M8 6V5.2C8 3.43 8 2 11.2 2H12.8C16 2 16 3.43 16 5.2V6" stroke="currentColor" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/><path d="M14 13V14C14 14.01 14 14.01 14 14.02C14 15.11 13.99 16 12 16C10.02 16 10 15.12 10 14.03V13C10 12 10 12 11 12H13C14 12 14 12 14 13Z" stroke="currentColor" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/></g><defs><clipPath id="br"><rect width="24" height="24" fill="none"/></clipPath></defs></svg>`, bg: '#3B82F611', iconColor: '#2563EB', label: 'Marketing' },
+    { value: 'admin', icon: `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="none"><g clip-path="url(#sh)"><path d="M10.49 2.23019L5.50003 4.11019C4.35003 4.54019 3.41003 5.90019 3.41003 7.12019V14.5502C3.41003 15.7302 4.19003 17.2802 5.14003 17.9902L9.44003 21.2002C10.85 22.2602 13.17 22.2602 14.58 21.2002L18.88 17.9902C19.83 17.2802 20.61 15.7302 20.61 14.5502V7.12019C20.61 5.89019 19.67 4.53019 18.52 4.10019L13.53 2.23019C12.68 1.92019 11.32 1.92019 10.49 2.23019Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M9.05005 11.87L10.66 13.48L14.96 9.18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></g><defs><clipPath id="sh"><rect width="24" height="24" fill="none"/></clipPath></defs></svg>`, bg: '#10B98111', iconColor: '#059669', label: 'Admin' },
+    { value: 'manager', icon: `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="none"><g clip-path="url(#bc)"><path d="M18.32 11.9992C20.92 11.9992 22 10.9992 21.04 7.7192C20.39 5.5092 18.49 3.6092 16.28 2.9592C13 1.9992 12 3.0792 12 5.6792V8.5592C12 10.9992 13 11.9992 15 11.9992H18.32Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M20.0001 14.6998C19.0701 19.3298 14.6301 22.6898 9.58005 21.8698C5.79005 21.2598 2.74005 18.2098 2.12005 14.4198C1.31005 9.38977 4.65005 4.94977 9.26005 4.00977" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></g><defs><clipPath id="bc"><rect width="24" height="24" fill="none"/></clipPath></defs></svg>`, bg: '#6366F111', iconColor: '#4F46E5', label: 'Manager' },
   ];
 
   const grid = document.getElementById('role-grid');
