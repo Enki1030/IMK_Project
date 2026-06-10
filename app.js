@@ -1,4 +1,8 @@
-
+/* =============================================================
+   SALES KIT — app.js
+   Replikasi 100% dari arsitektur React + TanStack Router
+   Seluruh logika aplikasi dalam 1 file vanilla JS
+   ============================================================= */
 
 'use strict';
 
