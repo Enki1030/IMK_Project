@@ -364,7 +364,8 @@ function navigate(page, opts = {}) {
       amount: 0,
       confirmed: false,
       submittedBy: '',
-      photo: false
+      photo: false,
+      ktpPhoto: false
     };
     renderInput(0);
   }
@@ -639,7 +640,7 @@ function renderCustomerList() {
 
     return `<div class="customer-card${isPending ? ' pending' : ''}" onclick="navigateId('${c.id}')">
       <div class="customer-card-inner">
-        ${isPending ? `<div class="pending-label"><span class="pending-dot"></span> Belum Konfirmasi${c.submittedBy ? ` <span style="font-weight:500;text-transform:none;letter-spacing:normal;opacity:0.75;">· dari ${c.submittedBy}</span>` : ''}</div>` : ''}
+        ${isPending ? `<div class="pending-label"><span class="pending-dot"></span> Belum Konfirmasi${c.submittedBy ? ` <span style="font-weight:500;text-transform:none;letter-spacing:normal;opacity:0.75;">· dari ${c.submittedBy.split('(')[0].trim()}</span>` : ''}</div>` : ''}
         <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:0.75rem;">
           <div style="flex:1;min-width:0;">
             <div style="display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap;">
@@ -854,6 +855,9 @@ async function openCameraModal(type) {
   if (type === 'customer_photo') {
     video.style.transform = 'scaleX(1)';
     if (modalTitle) modalTitle.textContent = 'Ambil Foto Lokasi';
+  } else if (type === 'ktp_photo') {
+    video.style.transform = 'scaleX(-1)';
+    if (modalTitle) modalTitle.textContent = 'Ambil Foto KTP';
   } else {
     video.style.transform = 'scaleX(-1)';
     if (modalTitle) modalTitle.textContent = 'Ambil Foto Selfie';
@@ -893,6 +897,10 @@ function captureCameraPhoto() {
     newCustomerTemp.photo = true;
     if (typeof showToast === 'function') showToast('Foto lokasi berhasil diambil');
     renderInput(2);
+  } else if (currentCameraAction === 'ktp_photo') {
+    newCustomerTemp.ktpPhoto = true;
+    if (typeof showToast === 'function') showToast('Foto KTP berhasil diambil');
+    renderInput(0);
   }
 }
 
@@ -900,6 +908,11 @@ function openCustomerCamera() {
   openCameraModal('customer_photo');
 }
 window.openCustomerCamera = openCustomerCamera;
+
+function openKtpCamera() {
+  openCameraModal('ktp_photo');
+}
+window.openKtpCamera = openKtpCamera;
 
 function doCheckin() {
   const now = new Date().toLocaleTimeString('id-ID', { hour12: false });
@@ -1059,9 +1072,17 @@ function renderInput(step = 0) {
       <div style="margin-top:1rem;"><label class="field-label">Nomor Telepon <span class="req">*</span></label><div class="field-wrap"><input id="inp-telepon" class="input" placeholder="08xxxxxxxxxx" type="tel" value="${newCustomerTemp.phone || ''}" /></div></div>
       <div style="margin-top:1rem;"><label class="field-label">Email (Opsional)</label><div class="field-wrap"><input id="inp-email" class="input" placeholder="nama@email.com" type="email" value="${newCustomerTemp.email || ''}" /></div></div>
       <div style="margin-top:1rem;"><label class="field-label">Foto KTP</label><div class="field-wrap">
-        <button type="button" class="upload-zone">
-          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="none"><g clip-path="url(#upl)"><path d="M9 17V11L7 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M9 11L11 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M22 10V15C22 20 20 22 15 22H9C4 22 2 20 2 15V9C2 4 4 2 9 2H14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M22 10H18C15 10 14 9 14 6V2L22 10Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></g><defs><clipPath id="upl"><rect width="24" height="24" fill="none"/></clipPath></defs></svg>
-          <span>Tap untuk upload foto KTP</span>
+        <button type="button" class="upload-zone" onclick="openKtpCamera()">
+          ${newCustomerTemp.ktpPhoto ? `
+            <div style="color:var(--success); display:flex; flex-direction:column; align-items:center; gap:0.25rem;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:2rem; height:2rem;"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+              <span>Foto KTP Tersimpan</span>
+              <span>Tap untuk mengambil ulang foto</span>
+            </div>
+          ` : `
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="none"><g clip-path="url(#upl)"><path d="M9 17V11L7 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M9 11L11 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M22 10V15C22 20 20 22 15 22H9C4 22 2 20 2 15V9C2 4 4 2 9 2H14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M22 10H18C15 10 14 9 14 6V2L22 10Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></g><defs><clipPath id="upl"><rect width="24" height="24" fill="none"/></clipPath></defs></svg>
+            <span>Tap untuk ambil foto KTP</span>
+          `}
         </button>
       </div></div>
     </div>`;
@@ -1199,7 +1220,7 @@ function submitInput() {
     registered: registeredDate,
     amount: amount,
     confirmed: false,
-    submittedBy: DB.roleProfiles[currentRole]?.name || 'Budiono Siregar'
+    submittedBy: DB.roleProfiles[currentRole] ? `${DB.roleProfiles[currentRole].name} (${DB.roleProfiles[currentRole].email})` : 'Budiono Siregar (budiono@saleskit.id)'
   };
 
   DB.customers.unshift(newCustomer);
@@ -1256,6 +1277,24 @@ function renderDetail(id) {
   const c = customers.find(x => x.id === id);
   if (!c) { navigate('home'); return; }
   selectedDetail = c;
+
+  let submitterName = 'Marketing Lapangan';
+  let submitterEmail = 'marketing@saleskit.id';
+  if (c.submittedBy) {
+    if (c.submittedBy.includes('(')) {
+      const parts = c.submittedBy.split('(');
+      submitterName = parts[0].trim();
+      submitterEmail = parts[1].replace(')', '').trim();
+    } else {
+      submitterName = c.submittedBy;
+      if (submitterName.includes('Budiono')) submitterEmail = 'budiono@saleskit.id';
+      else if (submitterName.includes('Niko')) submitterEmail = 'niko@saleskit.id';
+      else if (submitterName.includes('Praniwi')) submitterEmail = 'praniwi@saleskit.id';
+    }
+  } else {
+    submitterName = 'Budiono Siregar';
+    submitterEmail = 'budiono@saleskit.id';
+  }
 
   document.title = `${c.name} — Sales Kit`;
 
@@ -1320,7 +1359,8 @@ function renderDetail(id) {
     </div>
     <div style="text-align:center; padding:1rem 0; margin-bottom:1rem;">
       <p style="font-size:0.75rem; color:var(--muted-fg);">Diinput oleh:</p>
-      <p style="font-size:0.875rem; font-weight:600; color:var(--foreground);">${c.submittedBy || 'Marketing Lapangan'}</p>
+      <p style="font-size:0.875rem; font-weight:600; color:var(--foreground); margin:0;">${submitterName}</p>
+      <p style="font-size:0.75rem; color:var(--muted-fg); margin:2px 0 0 0;">${submitterEmail}</p>
     </div>`;
 }
 
