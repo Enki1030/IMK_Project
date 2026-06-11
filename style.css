@@ -814,9 +814,19 @@ select.input {
   width: 100%;
   max-width: 300px;
   margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
 }
 
-.onboarding-illustration img {
+.onboarding-logo {
+  width: 130px;
+  height: auto;
+  object-fit: contain;
+}
+
+.onboarding-graphic {
   width: 100%;
   height: auto;
   object-fit: contain;
