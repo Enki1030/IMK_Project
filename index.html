@@ -25,7 +25,8 @@
       <div style="height:1.5rem;"></div>
       <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;">
         <div class="onboarding-illustration">
-          <img src="./icon/Group.svg" alt="Sales Kit Illustration" draggable="false" />
+          <img src="./icon/saleskitlogo.png" class="onboarding-logo" alt="Sales Kit Logo" draggable="false" />
+          <img src="./icon/Group.svg" class="onboarding-graphic" alt="Sales Kit Illustration" draggable="false" />
         </div>
         <h1 class="onboarding-title">Pendataan Jadi Mudah</h1>
         <p class="onboarding-sub">Data pelanggan yang rapi terorganisir membantu pemasaran meningkatkan penjualan.</p>
@@ -367,9 +368,8 @@
                     <path
                       d="M10.49 2.23019L5.50003 4.11019C4.35003 4.54019 3.41003 5.90019 3.41003 7.12019V14.5502C3.41003 15.7302 4.19003 17.2802 5.14003 17.9902L9.44003 21.2002C10.85 22.2602 13.17 22.2602 14.58 21.2002L18.88 17.9902C19.83 17.2802 20.61 15.7302 20.61 14.5502V7.12019C20.61 5.89019 19.67 4.53019 18.52 4.10019L13.53 2.23019C12.68 1.92019 11.32 1.92019 10.49 2.23019Z"
                       stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-                    <path
-                      d="M9.05005 11.87L10.66 13.48L14.96 9.18"
-                      stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                    <path d="M9.05005 11.87L10.66 13.48L14.96 9.18" stroke="currentColor" stroke-width="1.5"
+                      stroke-linecap="round" stroke-linejoin="round" />
                   </g>
                   <defs>
                     <clipPath id="sc">
@@ -601,24 +601,31 @@
             <path d="M20 6L9 17l-5-5" />
           </svg>
         </div>
-        <p id="toast-msg" style="font-size:0.875rem; font-weight:600; color:var(--foreground); margin:0;">Selamat, Data Berhasil di Simpan</p>
+        <p id="toast-msg" style="font-size:0.875rem; font-weight:600; color:var(--foreground); margin:0;">Selamat, Data
+          Berhasil di Simpan</p>
       </div>
     </div>
 
     <!-- Camera Preview Modal -->
     <div id="camera-modal" class="sheet-overlay hidden" style="z-index:9999; background:rgba(0,0,0,0.9);">
-      <div style="position:absolute; top:0; left:0; width:100%; height:100%; display:flex; flex-direction:column; padding:1rem;">
+      <div
+        style="position:absolute; top:0; left:0; width:100%; height:100%; display:flex; flex-direction:column; padding:1rem;">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; color:#fff;">
           <h3 style="font-weight:700; font-size:1.125rem;">Ambil Foto Selfie</h3>
           <button onclick="closeCameraModal()" style="background:none; border:none; color:#fff; cursor:pointer;">
-            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M18 6L6 18M6 6l12 12" />
+            </svg>
           </button>
         </div>
-        <div style="flex:1; position:relative; width:100%; border-radius:0.75rem; overflow:hidden; background:#000; display:flex; justify-content:center; align-items:center;">
-          <video id="camera-video" autoplay playsinline style="width:100%; height:100%; object-fit:cover; transform:scaleX(-1);"></video>
+        <div
+          style="flex:1; position:relative; width:100%; border-radius:0.75rem; overflow:hidden; background:#000; display:flex; justify-content:center; align-items:center;">
+          <video id="camera-video" autoplay playsinline
+            style="width:100%; height:100%; object-fit:cover; transform:scaleX(-1);"></video>
         </div>
         <div style="margin-top:1.5rem; padding-bottom:2rem;">
-          <button class="btn btn-primary" style="width:100%; border-radius:0.75rem;" onclick="captureCameraPhoto()">Ambil Foto & Lanjut</button>
+          <button class="btn btn-primary" style="width:100%; border-radius:0.75rem;"
+            onclick="captureCameraPhoto()">Ambil Foto & Lanjut</button>
         </div>
       </div>
     </div>
